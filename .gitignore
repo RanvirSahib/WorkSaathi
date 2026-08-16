@@ -1,0 +1,29 @@
+# OS & Editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Backend
+backend/target/
+backend/.m2/
+backend/*.log
+backend/.apt_generated
+backend/.classpath
+backend/.factorypath
+backend/.project
+backend/.settings
+backend/.sts4-cache
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/work/
+frontend/*.log
+frontend/*.local
+
+# Root Logs
+*.log
