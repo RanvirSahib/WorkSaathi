@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Header, Home, FindWorkers, Profile, Booking, CustomerDashboard, WorkerDashboard, AdminDashboard, AuthPage } from '../main';
 import { api } from '../services/api';
@@ -78,14 +78,18 @@ describe('WorkSaathi UI Component Suites', () => {
       ]);
       vi.spyOn(api, 'cancelJob').mockResolvedValue({ id: 10, status: 'CANCELLED' });
 
-      render(<CustomerDashboard setRole={() => {}} setPage={() => {}} setSelected={() => {}} workerList={[]} auth={{ name: 'Customer Test' }} />);
+      await act(async () => {
+        render(<CustomerDashboard setRole={() => {}} setPage={() => {}} setSelected={() => {}} workerList={[]} auth={{ name: 'Customer Test' }} />);
+      });
 
       await waitFor(() => {
         expect(screen.getByText(/Ceiling Fan Repair/i)).toBeInTheDocument();
       });
 
-      const cancelBtn = screen.getByText(/Cancel/i);
-      fireEvent.click(cancelBtn);
+      await act(async () => {
+        const cancelBtn = screen.getByText(/Cancel/i);
+        fireEvent.click(cancelBtn);
+      });
       expect(api.cancelJob).toHaveBeenCalledWith(10);
     });
   });
@@ -97,14 +101,18 @@ describe('WorkSaathi UI Component Suites', () => {
       ]);
       vi.spyOn(api, 'acceptJob').mockResolvedValue({ id: 25, status: 'ACCEPTED' });
 
-      render(<WorkerDashboard auth={{ name: 'Raj Kumar' }} setRole={() => {}} />);
+      await act(async () => {
+        render(<WorkerDashboard auth={{ name: 'Raj Kumar' }} setRole={() => {}} />);
+      });
 
       await waitFor(() => {
         expect(screen.getByText(/Pipe Leakage/i)).toBeInTheDocument();
       });
 
-      const acceptBtn = screen.getByText(/Accept/i);
-      fireEvent.click(acceptBtn);
+      await act(async () => {
+        const acceptBtn = screen.getByText(/Accept/i);
+        fireEvent.click(acceptBtn);
+      });
       expect(api.acceptJob).toHaveBeenCalledWith(25);
     });
   });
@@ -122,15 +130,19 @@ describe('WorkSaathi UI Component Suites', () => {
       ]);
       vi.spyOn(api, 'verifyWorker').mockResolvedValue({ success: true, message: 'Worker approved' });
 
-      render(<AdminDashboard auth={{ name: 'Admin' }} />);
+      await act(async () => {
+        render(<AdminDashboard auth={{ name: 'Admin' }} />);
+      });
 
       await waitFor(() => {
         expect(screen.getByText(/New Plumber/i)).toBeInTheDocument();
         expect(screen.getByText(/Total platform users/i)).toBeInTheDocument();
       });
 
-      const approveBtn = screen.getByText(/Approve Pro/i);
-      fireEvent.click(approveBtn);
+      await act(async () => {
+        const approveBtn = screen.getByText(/Approve Pro/i);
+        fireEvent.click(approveBtn);
+      });
       expect(api.verifyWorker).toHaveBeenCalledWith(88);
     });
   });
