@@ -1,5 +1,9 @@
 # WorkSaathi — On-Demand Local Services & Blue-Collar Hiring Platform 🛠️✨
 
+## 🚀 Live Demo
+
+🌐 **Frontend:** https://work-saathi.vercel.app
+
 [![Backend Tests](https://img.shields.io/badge/Backend%20Tests-18%2F18%20Passed-brightgreen)](backend)
 [![Frontend Tests](https://img.shields.io/badge/Frontend%20Tests-13%2F13%20Passed-brightgreen)](frontend)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.0-blue)](https://spring.io/projects/spring-boot)
