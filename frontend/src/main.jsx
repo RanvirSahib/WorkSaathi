@@ -82,9 +82,11 @@ export function Stars({ value, count }) {
 }
 
 /* =========================================
-   HEADER & NAVBAR
+   HEADER & NAVBAR (Clean Startup Navbar)
 ========================================= */
-export function Header({ page, setPage, role, setRole, auth, onLogout, city, setCity }) {
+export function Header({ page, setPage, auth, onLogout, city, setCity, openPartnerRegister }) {
+  const userRole = auth?.role?.toUpperCase();
+
   return (
     <header className="app-header">
       <div className="brand" onClick={() => setPage('home')} style={{ cursor: 'pointer' }}>
@@ -107,7 +109,11 @@ export function Header({ page, setPage, role, setRole, auth, onLogout, city, set
         <nav className="nav-links">
           <button className={`nav-item ${page === 'find' ? 'active' : ''}`} onClick={() => setPage('find')}>Explore Pros</button>
           <button className={`nav-item ${page === 'how' ? 'active' : ''}`} onClick={() => setPage('how')}>How It Works</button>
-          <button className={`nav-item ${page === 'about' ? 'active' : ''}`} onClick={() => setPage('about')}>Trust & Safety</button>
+          {!auth && (
+            <button className="nav-item" onClick={openPartnerRegister} style={{ color: 'var(--secondary)' }}>
+              ⚡ Become a Partner
+            </button>
+          )}
         </nav>
       </div>
 
@@ -115,31 +121,16 @@ export function Header({ page, setPage, role, setRole, auth, onLogout, city, set
         {auth ? (
           <>
             <button className="btn btn-outline btn-sm" onClick={() => setPage('dashboard')}>
-              👤 {auth.name} ({auth.role})
+              {userRole === 'WORKER' ? '⚡ Partner Workspace' : userRole === 'ADMIN' ? '🛡️ Admin Panel' : '📦 My Bookings'} ({auth.name.split(' ')[0]})
             </button>
             <button className="btn btn-danger-outline btn-sm" onClick={onLogout}>Log out</button>
           </>
         ) : (
           <>
             <button className="btn btn-outline" onClick={() => setPage('auth')}>Log in</button>
-            <button className="btn btn-primary" onClick={() => setPage('auth')}>Book a Pro ➔</button>
+            <button className="btn btn-primary" onClick={() => setPage('find')}>Book a Pro ➔</button>
           </>
         )}
-
-        <select
-          aria-label="View role"
-          className="role-selector"
-          value={role}
-          onChange={e => {
-            const nextRole = e.target.value;
-            setRole(nextRole);
-            setPage('dashboard');
-          }}
-        >
-          <option value="customer">👨 Customer Portal</option>
-          <option value="worker">⚡ Worker Portal</option>
-          <option value="admin">🛡️ Admin Portal</option>
-        </select>
       </div>
     </header>
   );
@@ -148,7 +139,7 @@ export function Header({ page, setPage, role, setRole, auth, onLogout, city, set
 /* =========================================
    HOME PAGE
 ========================================= */
-export function Home({ setPage, setQuery, servicesList = [] }) {
+export function Home({ setPage, setQuery, servicesList = [], openPartnerRegister }) {
   const displayServices = servicesList.length ? servicesList : fallbackServices;
 
   return (
@@ -326,7 +317,7 @@ export function Home({ setPage, setQuery, servicesList = [] }) {
             <h2 style={{ fontFamily: 'Fraunces, serif', fontSize: '36px', marginBottom: '12px' }}>Are you a skilled professional?</h2>
             <p style={{ fontSize: '16px', color: '#dbeafe', maxWidth: '500px' }}>Join thousands of electricians, plumbers, and technicians earning ₹40,000+ monthly with flexible hours and weekly payouts.</p>
           </div>
-          <button className="btn btn-secondary btn-lg" onClick={() => setPage('auth')}>
+          <button className="btn btn-secondary btn-lg" onClick={openPartnerRegister}>
             Partner with WorkSaathi ➔
           </button>
         </div>
@@ -388,24 +379,28 @@ export function FindWorkers({ query, setQuery, setPage, setSelected, workerList 
           </div>
 
           <div className="filter-group">
-            <label>Service Category</label>
-            <select className="filter-select" value={selectedService} onChange={e => setSelectedService(e.target.value)}>
-              <option value="All">All Categories</option>
-              {servicesList.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
-            </select>
+            <label>
+              Service Category
+              <select className="filter-select" value={selectedService} onChange={e => setSelectedService(e.target.value)}>
+                <option value="All">All Categories</option>
+                {servicesList.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+              </select>
+            </label>
           </div>
 
           <div className="filter-group">
-            <label>Max Budget: ₹{priceMax}</label>
-            <input
-              type="range"
-              min="200"
-              max="2000"
-              step="50"
-              value={priceMax}
-              onChange={e => setPriceMax(Number(e.target.value))}
-              style={{ width: '100%', accentColor: 'var(--primary)' }}
-            />
+            <label>
+              Max Budget: ₹{priceMax}
+              <input
+                type="range"
+                min="200"
+                max="2000"
+                step="50"
+                value={priceMax}
+                onChange={e => setPriceMax(Number(e.target.value))}
+                style={{ width: '100%', accentColor: 'var(--primary)' }}
+              />
+            </label>
           </div>
 
           <div className="filter-group">
@@ -573,7 +568,7 @@ export function Booking({ worker, close, setPage, services = [], auth, onJobCrea
     }
   };
 
-  const finalAmount = Math.max(99, (worker.rate || 499) - discount + 49); // +49 safety fee
+  const finalAmount = Math.max(99, (worker.rate || 499) - discount + 49);
 
   const handleConfirm = async () => {
     if (!auth) {
@@ -621,59 +616,69 @@ export function Booking({ worker, close, setPage, services = [], auth, onJobCrea
         {step === 1 ? (
           <div>
             <div className="filter-group">
-              <label>Service Category</label>
-              <select
-                className="filter-select"
-                value={details.serviceId}
-                onChange={e => setDetails({ ...details, serviceId: e.target.value })}
-              >
-                {services.map(s => <option key={s.id} value={s.id}>{s.name} (Base: ₹{s.basePrice})</option>)}
-              </select>
+              <label>
+                Service Category
+                <select
+                  className="filter-select"
+                  value={details.serviceId}
+                  onChange={e => setDetails({ ...details, serviceId: e.target.value })}
+                >
+                  {services.map(s => <option key={s.id} value={s.id}>{s.name} (Base: ₹{s.basePrice})</option>)}
+                </select>
+              </label>
             </div>
 
             <div className="filter-group">
-              <label>Service Address</label>
-              <input
-                className="filter-input"
-                value={details.address}
-                onChange={e => setDetails({ ...details, address: e.target.value })}
-              />
+              <label>
+                Service Address
+                <input
+                  className="filter-input"
+                  value={details.address}
+                  onChange={e => setDetails({ ...details, address: e.target.value })}
+                />
+              </label>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               <div className="filter-group">
-                <label>Date</label>
-                <input
-                  type="date"
-                  className="filter-input"
-                  value={details.date}
-                  onChange={e => setDetails({ ...details, date: e.target.value })}
-                />
+                <label>
+                  Date
+                  <input
+                    type="date"
+                    className="filter-input"
+                    value={details.date}
+                    onChange={e => setDetails({ ...details, date: e.target.value })}
+                  />
+                </label>
               </div>
               <div className="filter-group">
-                <label>Time Slot</label>
-                <select
-                  className="filter-select"
-                  value={details.time}
-                  onChange={e => setDetails({ ...details, time: e.target.value })}
-                >
-                  <option>10:00 AM - 12:00 PM</option>
-                  <option>01:00 PM - 03:00 PM</option>
-                  <option>04:00 PM - 06:00 PM</option>
-                  <option>07:00 PM - 09:00 PM</option>
-                </select>
+                <label>
+                  Time Slot
+                  <select
+                    className="filter-select"
+                    value={details.time}
+                    onChange={e => setDetails({ ...details, time: e.target.value })}
+                  >
+                    <option>10:00 AM - 12:00 PM</option>
+                    <option>01:00 PM - 03:00 PM</option>
+                    <option>04:00 PM - 06:00 PM</option>
+                    <option>07:00 PM - 09:00 PM</option>
+                  </select>
+                </label>
               </div>
             </div>
 
             <div className="filter-group">
-              <label>Instructions / Issue Description</label>
-              <textarea
-                className="filter-input"
-                rows="3"
-                placeholder="E.g. Main switchboard tripping frequently, please bring 32A MCB."
-                value={details.description}
-                onChange={e => setDetails({ ...details, description: e.target.value })}
-              />
+              <label>
+                Instructions / Issue Description
+                <textarea
+                  className="filter-input"
+                  rows="3"
+                  placeholder="E.g. Main switchboard tripping frequently, please bring 32A MCB."
+                  value={details.description}
+                  onChange={e => setDetails({ ...details, description: e.target.value })}
+                />
+              </label>
             </div>
 
             <button className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: '10px' }} onClick={() => setStep(2)}>
@@ -738,7 +743,7 @@ export function Booking({ worker, close, setPage, services = [], auth, onJobCrea
 export function ChatModal({ job, auth, close }) {
   const [messages, setMessages] = useState([
     { id: 1, sender: 'system', text: `Chat connected with ${job.workerName || 'Specialist'}. Your contact numbers are masked for privacy.` },
-    { id: 2, sender: 'other', text: `Hello ${auth?.name || 'Sir/Ma\'am'}, I have received your booking for ${job.title}. I am on the way.` }
+    { id: 2, sender: 'other', text: `Hello ${auth?.name || 'Customer'}, I have received your booking for ${job.title}. I am on the way.` }
   ]);
   const [text, setText] = useState('');
 
@@ -749,7 +754,6 @@ export function ChatModal({ job, auth, close }) {
     setMessages(prev => [...prev, userMsg]);
     setText('');
 
-    // Simulated technician response
     setTimeout(() => {
       setMessages(prev => [...prev, { id: Date.now() + 1, sender: 'other', text: 'Understood! I will reach your gate in 10-15 minutes.' }]);
     }, 1500);
@@ -787,12 +791,13 @@ export function ChatModal({ job, auth, close }) {
 }
 
 /* =========================================
-   CUSTOMER DASHBOARD
+   CUSTOMER DASHBOARD (Dedicated My Bookings)
 ========================================= */
-export function CustomerDashboard({ setRole, setPage, setSelected, workerList = [], auth }) {
+export function CustomerDashboard({ setPage, auth }) {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activeChatJob, setActiveChatJob] = useState(null);
+  const [activeTab, setActiveTab] = useState('active'); // 'active' | 'completed'
 
   const loadJobs = () => {
     setLoading(true);
@@ -818,15 +823,15 @@ export function CustomerDashboard({ setRole, setPage, setSelected, workerList = 
 
   const activeJobs = jobs.filter(j => ['REQUESTED', 'ACCEPTED', 'ON_THE_WAY', 'ARRIVED', 'IN_PROGRESS'].includes(j.status));
   const completedJobs = jobs.filter(j => j.status === 'COMPLETED');
-  const totalSpent = completedJobs.reduce((acc, curr) => acc + (curr.finalPrice || curr.estimatedPrice || 0), 0);
+  const displayedJobs = activeTab === 'active' ? activeJobs : completedJobs;
 
   return (
     <main className="dashboard-page">
       <div className="dashboard-hero">
         <div>
-          <div className="eyebrow-text">CUSTOMER CONTROL CENTER</div>
-          <h1>Welcome back, {auth?.name || 'Customer'} 👋</h1>
-          <p style={{ color: 'var(--muted)' }}>Manage live bookings, contact assigned pros, and view past history.</p>
+          <div className="eyebrow-text">MY ACCOUNT & ORDERS</div>
+          <h1>Hello, {auth?.name || 'Customer'} 👋</h1>
+          <p style={{ color: 'var(--muted)' }}>Track your active service orders, contact technicians, and view receipts.</p>
         </div>
         <button className="btn btn-primary" onClick={() => setPage('find')}>+ Book New Service</button>
       </div>
@@ -834,65 +839,80 @@ export function CustomerDashboard({ setRole, setPage, setSelected, workerList = 
       <div className="stats-grid">
         <div className="stat-card-modern">
           <strong>{activeJobs.length}</strong>
-          <span>Active Bookings</span>
+          <span>Live Active Orders</span>
         </div>
         <div className="stat-card-modern">
           <strong>{completedJobs.length}</strong>
-          <span>Completed Orders</span>
+          <span>Completed Services</span>
         </div>
         <div className="stat-card-modern">
-          <strong>₹{totalSpent.toLocaleString()}</strong>
-          <span>Total Spent</span>
+          <strong>₹10,000</strong>
+          <span>Insurance Cover Active</span>
         </div>
         <div className="stat-card-modern">
-          <strong>4.9 ★</strong>
-          <span>Customer Trust Score</span>
+          <strong>24/7</strong>
+          <span>Priority Support</span>
         </div>
       </div>
 
-      <section style={{ marginBottom: '40px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-          <h2>My Service Bookings ({jobs.length})</h2>
-          <button className="btn btn-outline btn-sm" onClick={loadJobs}>Refresh ↻</button>
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '12px' }}>
+        <button
+          className={`btn btn-sm ${activeTab === 'active' ? 'btn-primary' : 'btn-outline'}`}
+          onClick={() => setActiveTab('active')}
+        >
+          Live Bookings ({activeJobs.length})
+        </button>
+        <button
+          className={`btn btn-sm ${activeTab === 'completed' ? 'btn-primary' : 'btn-outline'}`}
+          onClick={() => setActiveTab('completed')}
+        >
+          Past Orders History ({completedJobs.length})
+        </button>
+        <button className="btn btn-outline btn-sm" style={{ marginLeft: 'auto' }} onClick={loadJobs}>
+          Refresh ↻
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="job-card-row" style={{ justifyContent: 'center', padding: '40px' }}>Loading your orders...</div>
+      ) : displayedJobs.length === 0 ? (
+        <div className="job-card-row" style={{ flexDirection: 'column', textAlign: 'center', padding: '50px' }}>
+          <h3>{activeTab === 'active' ? 'No active service orders' : 'No past order history'}</h3>
+          <p style={{ color: 'var(--muted)', margin: '8px 0 16px' }}>Need an electrician, plumber, AC service or cleaner?</p>
+          <button className="btn btn-primary btn-sm" onClick={() => setPage('find')}>Explore Verified Pros ➔</button>
         </div>
-
-        {loading ? (
-          <div className="job-card-row" style={{ justifyContent: 'center' }}>Loading your bookings...</div>
-        ) : jobs.length === 0 ? (
-          <div className="job-card-row" style={{ flexDirection: 'column', textAlign: 'center', padding: '40px' }}>
-            <h3>You have no bookings yet</h3>
-            <p style={{ color: 'var(--muted)', margin: '8px 0 16px' }}>Need an electrician, plumber, or cleaning service?</p>
-            <button className="btn btn-primary btn-sm" onClick={() => setPage('find')}>Explore Verified Pros ➔</button>
-          </div>
-        ) : (
-          jobs.map(job => (
-            <div className="job-card-row" key={job.id}>
-              <div className="job-details-group">
-                <div className="job-type-icon">{serviceIcons[job.serviceName] || '🔧'}</div>
-                <div className="job-info-text">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span className={`job-status-pill ${job.status}`}>● {job.status.replace(/_/g, ' ')}</span>
-                    <small style={{ color: 'var(--muted)' }}>OTP: <b>{3410 + (job.id % 900)}</b></small>
-                  </div>
-                  <h3>{job.title} ({job.serviceName})</h3>
-                  <p>{job.address} · Est: ₹{job.estimatedPrice || 500}</p>
+      ) : (
+        displayedJobs.map(job => (
+          <div className="job-card-row" key={job.id}>
+            <div className="job-details-group">
+              <div className="job-type-icon">{serviceIcons[job.serviceName] || '🔧'}</div>
+              <div className="job-info-text">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span className={`job-status-pill ${job.status}`}>● {job.status.replace(/_/g, ' ')}</span>
+                  {job.status !== 'COMPLETED' && (
+                    <small style={{ color: 'var(--muted)', background: 'var(--light-bg)', padding: '2px 8px', borderRadius: '4px', border: '1px solid var(--border)' }}>
+                      Safety OTP: <b style={{ color: 'var(--primary)' }}>{3410 + (job.id % 900)}</b>
+                    </small>
+                  )}
                 </div>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <button className="btn btn-outline btn-sm" onClick={() => setActiveChatJob(job)}>
-                  💬 Chat Pro
-                </button>
-                {['REQUESTED', 'ACCEPTED'].includes(job.status) && (
-                  <button className="btn btn-danger-outline btn-sm" onClick={() => handleCancel(job.id)}>
-                    Cancel
-                  </button>
-                )}
+                <h3 style={{ marginTop: '4px' }}>{job.title} ({job.serviceName})</h3>
+                <p>{job.address} · Assigned Pro: <b>{job.workerName || 'Specialist'}</b> · Est: ₹{job.estimatedPrice || 500}</p>
               </div>
             </div>
-          ))
-        )}
-      </section>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <button className="btn btn-outline btn-sm" onClick={() => setActiveChatJob(job)}>
+                💬 Chat Pro
+              </button>
+              {['REQUESTED', 'ACCEPTED'].includes(job.status) && (
+                <button className="btn btn-danger-outline btn-sm" onClick={() => handleCancel(job.id)}>
+                  Cancel
+                </button>
+              )}
+            </div>
+          </div>
+        ))
+      )}
 
       {activeChatJob && (
         <ChatModal job={activeChatJob} auth={auth} close={() => setActiveChatJob(null)} />
@@ -902,9 +922,9 @@ export function CustomerDashboard({ setRole, setPage, setSelected, workerList = 
 }
 
 /* =========================================
-   WORKER DASHBOARD
+   WORKER DASHBOARD (Dedicated Partner Portal)
 ========================================= */
-export function WorkerDashboard({ auth, setRole }) {
+export function WorkerDashboard({ auth }) {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isAvailable, setIsAvailable] = useState(true);
@@ -940,46 +960,46 @@ export function WorkerDashboard({ auth, setRole }) {
     <main className="dashboard-page">
       <div className="dashboard-hero">
         <div>
-          <div className="eyebrow-text">PARTNER WORKSPACE</div>
-          <h1>Pro Dashboard: {auth?.name || 'Raj Kumar'} ⚡</h1>
-          <p style={{ color: 'var(--muted)' }}>Manage incoming job requests, update travel status, and view weekly earnings.</p>
+          <div className="eyebrow-text">PARTNER PORTAL & WORKSPACE</div>
+          <h1>Hello, {auth?.name || 'Partner'} ⚡</h1>
+          <p style={{ color: 'var(--muted)' }}>Accept new jobs, update travel status to customer locations, and manage earnings.</p>
         </div>
         <button
           className={`btn ${isAvailable ? 'btn-secondary' : 'btn-outline'}`}
           onClick={() => {
             setIsAvailable(!isAvailable);
-            showToast(`Status updated: ${!isAvailable ? 'Available for Jobs' : 'Offline'}`, 'info');
+            showToast(`Status: ${!isAvailable ? 'Available for Jobs' : 'Offline'}`, 'info');
           }}
         >
-          ● {isAvailable ? 'You are Available Online' : 'Currently Offline'}
+          ● {isAvailable ? 'Online & Available for Jobs' : 'Currently Offline'}
         </button>
       </div>
 
       <div className="stats-grid">
         <div className="stat-card-modern">
           <strong>{pendingRequests.length}</strong>
-          <span>New Job Requests</span>
+          <span>Incoming Requests</span>
         </div>
         <div className="stat-card-modern">
           <strong>{activeJobs.length}</strong>
-          <span>Jobs In-Progress</span>
+          <span>Jobs In Progress</span>
         </div>
         <div className="stat-card-modern">
           <strong>₹{todayEarnings.toLocaleString()}</strong>
-          <span>Today's Earnings</span>
+          <span>Completed Earnings</span>
         </div>
         <div className="stat-card-modern">
           <strong>4.9 ★</strong>
-          <span>Worker Rating</span>
+          <span>Pro Performance</span>
         </div>
       </div>
 
       {/* NEW REQUESTS */}
       <section style={{ marginBottom: '36px' }}>
-        <h2 style={{ marginBottom: '14px' }}>New Incoming Requests ({pendingRequests.length})</h2>
+        <h2 style={{ marginBottom: '14px' }}>New Incoming Service Requests ({pendingRequests.length})</h2>
         {pendingRequests.length === 0 ? (
           <div className="job-card-row" style={{ justifyContent: 'center', padding: '30px' }}>
-            <span style={{ color: 'var(--muted)' }}>No pending requests. You are ready to receive new bookings!</span>
+            <span style={{ color: 'var(--muted)' }}>You are all caught up! New requests in your area will appear here in real-time.</span>
           </div>
         ) : (
           pendingRequests.map(r => (
@@ -994,8 +1014,8 @@ export function WorkerDashboard({ auth, setRole }) {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span style={{ fontSize: '18px', fontWeight: 800 }}>₹{r.estimatedPrice || 500}</span>
-                <button className="btn btn-danger-outline btn-sm" onClick={() => handleAction(api.rejectJob, r.id, 'Job rejected')}>Decline</button>
-                <button className="btn btn-primary btn-sm" onClick={() => handleAction(api.acceptJob, r.id, 'Job accepted! You can now start travel.')}>Accept Request</button>
+                <button className="btn btn-danger-outline btn-sm" onClick={() => handleAction(api.rejectJob, r.id, 'Job declined')}>Decline</button>
+                <button className="btn btn-primary btn-sm" onClick={() => handleAction(api.acceptJob, r.id, 'Job accepted! Please start travel.')}>Accept Request</button>
               </div>
             </div>
           ))
@@ -1004,10 +1024,10 @@ export function WorkerDashboard({ auth, setRole }) {
 
       {/* ACTIVE JOBS */}
       <section>
-        <h2 style={{ marginBottom: '14px' }}>Active & In-Progress Jobs ({activeJobs.length})</h2>
+        <h2 style={{ marginBottom: '14px' }}>Active Job Lifecycle Progression ({activeJobs.length})</h2>
         {activeJobs.length === 0 ? (
           <div className="job-card-row" style={{ justifyContent: 'center', padding: '30px' }}>
-            <span style={{ color: 'var(--muted)' }}>No jobs currently in progress.</span>
+            <span style={{ color: 'var(--muted)' }}>No active orders in progress right now.</span>
           </div>
         ) : (
           activeJobs.map(job => (
@@ -1016,7 +1036,7 @@ export function WorkerDashboard({ auth, setRole }) {
                 <div className="job-type-icon">{serviceIcons[job.serviceName] || '🔧'}</div>
                 <div className="job-info-text">
                   <span className={`job-status-pill ${job.status}`}>● {job.status.replace(/_/g, ' ')}</span>
-                  <h3>{job.title} · Customer: {job.customerName}</h3>
+                  <h3 style={{ marginTop: '4px' }}>{job.title} · Customer: {job.customerName}</h3>
                   <p>{job.address}</p>
                 </div>
               </div>
@@ -1033,12 +1053,12 @@ export function WorkerDashboard({ auth, setRole }) {
                 )}
                 {job.status === 'ARRIVED' && (
                   <button className="btn btn-primary" onClick={() => handleAction(api.startJob, job.id, 'Job Started ⚙️')}>
-                    Start Work ⚙️
+                    Verify OTP & Start Job ⚙️
                   </button>
                 )}
                 {job.status === 'IN_PROGRESS' && (
-                  <button className="btn btn-secondary" onClick={() => handleAction(api.completeJob, job.id, 'Job Completed! ✅')}>
-                    Complete Job ✅
+                  <button className="btn btn-secondary" onClick={() => handleAction(api.completeJob, job.id, 'Job Completed! Collect payment. ✅')}>
+                    Complete Job & Collect ₹{job.estimatedPrice || 500} ✅
                   </button>
                 )}
               </div>
@@ -1051,7 +1071,7 @@ export function WorkerDashboard({ auth, setRole }) {
 }
 
 /* =========================================
-   ADMIN DASHBOARD
+   ADMIN DASHBOARD (Dedicated Control Panel)
 ========================================= */
 export function AdminDashboard({ auth }) {
   const [stats, setStats] = useState({ totalUsers: 10, totalWorkers: 5, verifiedWorkers: 4, pendingVerifications: 1 });
@@ -1168,11 +1188,16 @@ export function AdminDashboard({ auth }) {
 /* =========================================
    AUTHENTICATION PAGE
 ========================================= */
-export function AuthPage({ onAuthenticated }) {
-  const [mode, setMode] = useState('login');
-  const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', role: 'CUSTOMER' });
+export function AuthPage({ onAuthenticated, initialRole = 'CUSTOMER', initialMode = 'login' }) {
+  const [mode, setMode] = useState(initialMode);
+  const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', role: initialRole });
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    setForm(prev => ({ ...prev, role: initialRole }));
+    setMode(initialMode);
+  }, [initialRole, initialMode]);
 
   const submit = async e => {
     if (e) e.preventDefault();
@@ -1209,10 +1234,10 @@ export function AuthPage({ onAuthenticated }) {
         </div>
 
         <h2 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '6px' }}>
-          {mode === 'login' ? 'Welcome Back' : 'Create Your Account'}
+          {mode === 'login' ? 'Sign In to WorkSaathi' : form.role === 'WORKER' ? 'Join as a WorkSaathi Partner' : 'Create Customer Account'}
         </h2>
         <p style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '20px' }}>
-          {mode === 'login' ? 'Log in to book services or manage your pro workspace.' : 'Sign up to find certified pros or grow your service business.'}
+          {mode === 'login' ? 'Access your dashboard and live bookings.' : form.role === 'WORKER' ? 'Sign up to receive high-paying local repair and installation jobs.' : 'Book verified local pros with zero booking fees.'}
         </p>
 
         <form onSubmit={submit}>
@@ -1272,14 +1297,14 @@ export function AuthPage({ onAuthenticated }) {
           {mode === 'register' && (
             <div className="filter-group">
               <label>
-                Join as
+                Account Type
                 <select
                   className="filter-select"
                   value={form.role}
                   onChange={e => setForm({ ...form, role: e.target.value })}
                 >
-                  <option value="CUSTOMER">Customer (Book Services)</option>
-                  <option value="WORKER">Worker Specialist (Provide Services)</option>
+                  <option value="CUSTOMER">Customer (Book Home Services)</option>
+                  <option value="WORKER">Technician / Specialist (Offer Services)</option>
                 </select>
               </label>
             </div>
@@ -1400,11 +1425,13 @@ export function mapWorker(worker, index = 0) {
 ========================================= */
 export function App() {
   const [page, setPage] = useState('home');
-  const [role, setRole] = useState('customer');
   const [query, setQuery] = useState('');
   const [city, setCity] = useState('New Delhi (NCR)');
   const [selected, setSelected] = useState(fallbackWorkers[0]);
   const [booking, setBooking] = useState(false);
+  const [authRoleInit, setAuthRoleInit] = useState('CUSTOMER');
+  const [authModeInit, setAuthModeInit] = useState('login');
+
   const [auth, setAuth] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('worksaathi_user'));
@@ -1439,8 +1466,6 @@ export function App() {
     const user = { name: result.name, role: result.role, email: result.email };
     localStorage.setItem('worksaathi_user', JSON.stringify(user));
     setAuth(user);
-    const lowerRole = (result.role || 'customer').toLowerCase();
-    setRole(lowerRole);
     setPage('dashboard');
   };
 
@@ -1449,12 +1474,18 @@ export function App() {
     localStorage.removeItem('worksaathi_refresh_token');
     localStorage.removeItem('worksaathi_user');
     setAuth(null);
-    setRole('customer');
     setPage('home');
     showToast('Logged out successfully', 'info');
   };
 
+  const openPartnerRegister = () => {
+    setAuthRoleInit('WORKER');
+    setAuthModeInit('register');
+    setPage('auth');
+  };
+
   const workerList = liveWorkers.length ? liveWorkers : fallbackWorkers;
+  const userRole = auth?.role?.toUpperCase();
 
   return (
     <>
@@ -1463,20 +1494,28 @@ export function App() {
       <Header
         page={page}
         setPage={setPage}
-        role={role}
-        setRole={setRole}
         auth={auth}
         onLogout={logout}
         city={city}
         setCity={setCity}
+        openPartnerRegister={openPartnerRegister}
       />
 
       {page === 'home' && (
-        <Home setPage={setPage} setQuery={setQuery} servicesList={servicesList} />
+        <Home
+          setPage={setPage}
+          setQuery={setQuery}
+          servicesList={servicesList}
+          openPartnerRegister={openPartnerRegister}
+        />
       )}
 
       {page === 'auth' && (
-        <AuthPage onAuthenticated={authenticated} />
+        <AuthPage
+          onAuthenticated={authenticated}
+          initialRole={authRoleInit}
+          initialMode={authModeInit}
+        />
       )}
 
       {page === 'find' && (
@@ -1498,16 +1537,13 @@ export function App() {
       )}
 
       {page === 'dashboard' && (
-        role === 'worker' ? (
-          <WorkerDashboard auth={auth} setRole={setRole} />
-        ) : role === 'admin' ? (
+        userRole === 'WORKER' ? (
+          <WorkerDashboard auth={auth} />
+        ) : userRole === 'ADMIN' ? (
           <AdminDashboard auth={auth} />
         ) : (
           <CustomerDashboard
-            setRole={setRole}
             setPage={setPage}
-            setSelected={setSelected}
-            workerList={workerList}
             auth={auth}
           />
         )

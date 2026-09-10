@@ -13,19 +13,19 @@ describe('WorkSaathi UI Component Suites', () => {
   describe('Header Component', () => {
     it('should render brand and navigation buttons', () => {
       const setPage = vi.fn();
-      render(<Header page="home" setPage={setPage} role="customer" setRole={() => {}} auth={null} onLogout={() => {}} city="New Delhi (NCR)" setCity={() => {}} />);
+      render(<Header page="home" setPage={setPage} auth={null} onLogout={() => {}} city="New Delhi (NCR)" setCity={() => {}} openPartnerRegister={() => {}} />);
       
       expect(screen.getByText(/Explore Pros/i)).toBeInTheDocument();
       expect(screen.getByText(/How It Works/i)).toBeInTheDocument();
-      expect(screen.getByText(/Trust & Safety/i)).toBeInTheDocument();
+      expect(screen.getByText(/Become a Partner/i)).toBeInTheDocument();
     });
 
     it('should show logged in user info and log out button', () => {
       const onLogout = vi.fn();
       const auth = { name: 'Ranvir', role: 'CUSTOMER' };
-      render(<Header page="home" setPage={() => {}} role="customer" setRole={() => {}} auth={auth} onLogout={onLogout} city="New Delhi (NCR)" setCity={() => {}} />);
+      render(<Header page="home" setPage={() => {}} auth={auth} onLogout={onLogout} city="New Delhi (NCR)" setCity={() => {}} openPartnerRegister={() => {}} />);
       
-      expect(screen.getByText(/👤 Ranvir \(CUSTOMER\)/i)).toBeInTheDocument();
+      expect(screen.getByText(/My Bookings \(Ranvir\)/i)).toBeInTheDocument();
       const logoutBtn = screen.getByText(/Log out/i);
       fireEvent.click(logoutBtn);
       expect(onLogout).toHaveBeenCalled();
@@ -36,7 +36,7 @@ describe('WorkSaathi UI Component Suites', () => {
     it('should render hero title, search bar, and service categories', () => {
       const setPage = vi.fn();
       const setQuery = vi.fn();
-      render(<Home setPage={setPage} setQuery={setQuery} servicesList={[{ id: 1, name: 'Electrician', description: 'Wiring and repairs' }]} />);
+      render(<Home setPage={setPage} setQuery={setQuery} servicesList={[{ id: 1, name: 'Electrician', description: 'Wiring and repairs' }]} openPartnerRegister={() => {}} />);
 
       expect(screen.getByText(/Expert Help for/i)).toBeInTheDocument();
       expect(screen.getByPlaceholderText(/What service do you need/i)).toBeInTheDocument();
@@ -80,7 +80,7 @@ describe('WorkSaathi UI Component Suites', () => {
       vi.spyOn(api, 'cancelJob').mockResolvedValue({ id: 10, status: 'CANCELLED' });
 
       await act(async () => {
-        render(<CustomerDashboard setRole={() => {}} setPage={() => {}} setSelected={() => {}} workerList={[]} auth={{ name: 'Customer Test' }} />);
+        render(<CustomerDashboard setPage={() => {}} auth={{ name: 'Customer Test' }} />);
       });
 
       await waitFor(() => {
@@ -103,7 +103,7 @@ describe('WorkSaathi UI Component Suites', () => {
       vi.spyOn(api, 'acceptJob').mockResolvedValue({ id: 25, status: 'ACCEPTED' });
 
       await act(async () => {
-        render(<WorkerDashboard auth={{ name: 'Raj Kumar' }} setRole={() => {}} />);
+        render(<WorkerDashboard auth={{ name: 'Raj Kumar' }} />);
       });
 
       await waitFor(() => {
