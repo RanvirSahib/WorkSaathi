@@ -4,21 +4,21 @@ import { api } from './services/api';
 import './styles.css';
 
 export const fallbackWorkers = [
-  { id: 1, name: 'Raj Kumar', role: 'Electrician', rating: 4.8, reviews: 127, rate: 500, distance: 2.4, exp: 5, photo: 'RK', color: '#195a9b', available: true, skills: ['Electrician', 'AC Service'] },
-  { id: 2, name: 'Sanjay Verma', role: 'Plumber', rating: 4.9, reviews: 92, rate: 450, distance: 1.8, exp: 7, photo: 'SV', color: '#0b8a79', available: true, skills: ['Plumber'] },
-  { id: 3, name: 'Amit Singh', role: 'Carpenter', rating: 4.7, reviews: 84, rate: 600, distance: 3.1, exp: 6, photo: 'AS', color: '#a15c26', available: true, skills: ['Carpenter'] },
-  { id: 4, name: 'Priya Sharma', role: 'Home Cleaning', rating: 4.9, reviews: 204, rate: 350, distance: 2.7, exp: 4, photo: 'PS', color: '#944e78', available: true, skills: ['Home Cleaning'] }
+  { id: 1, name: 'Raj Kumar', role: 'Electrician', rating: 4.8, reviews: 142, rate: 499, distance: 1.8, exp: 6, photo: 'RK', color: '#0f62fe', available: true, skills: ['Wiring & Fuse', 'Appliance Repair', 'Inverter Setup', 'AC Installation'] },
+  { id: 2, name: 'Sanjay Verma', role: 'Plumber', rating: 4.9, reviews: 98, rate: 450, distance: 2.3, exp: 8, photo: 'SV', color: '#00a676', available: true, skills: ['Leak Repairs', 'Pipe Fittings', 'Tap Installation', 'Drain Unclog'] },
+  { id: 3, name: 'Amit Singh', role: 'Carpenter', rating: 4.7, reviews: 88, rate: 599, distance: 3.1, exp: 7, photo: 'AS', color: '#f59e0b', available: true, skills: ['Custom Furniture', 'Door & Window Locks', 'Wood Polish', 'Modular Wardrobe'] },
+  { id: 4, name: 'Priya Sharma', role: 'Home Cleaning', rating: 4.9, reviews: 215, rate: 399, distance: 2.5, exp: 5, photo: 'PS', color: '#9333ea', available: true, skills: ['Deep House Cleaning', 'Kitchen & Bathroom Sanitization', 'Sofa Shampoo'] }
 ];
 
 export const fallbackServices = [
-  { id: 1, name: 'Electrician', description: 'Wiring, repairs & installations', category: 'Electrical', basePrice: 150 },
-  { id: 2, name: 'Plumber', description: 'Leak repairs & pipe fittings', category: 'Plumbing', basePrice: 120 },
-  { id: 3, name: 'Carpenter', description: 'Furniture making & woodwork', category: 'Carpentry', basePrice: 200 },
-  { id: 4, name: 'Home Cleaning', description: 'Deep home & office cleaning', category: 'Cleaning', basePrice: 300 },
-  { id: 5, name: 'AC Service', description: 'AC repair & maintenance', category: 'Appliances', basePrice: 250 },
-  { id: 6, name: 'Painter', description: 'Interior & exterior painting', category: 'Painting', basePrice: 350 },
-  { id: 7, name: 'Mechanic', description: 'Two-wheeler & four-wheeler servicing', category: 'Automotive', basePrice: 200 },
-  { id: 8, name: 'Gardening', description: 'Lawn care & plant maintenance', category: 'Outdoor', basePrice: 100 }
+  { id: 1, name: 'Electrician', description: 'Complete wiring, switchboards, lights & fans', category: 'Electrical', basePrice: 149 },
+  { id: 2, name: 'Plumber', description: 'Pipe leakage, tap repairs & sanitary fittings', category: 'Plumbing', basePrice: 149 },
+  { id: 3, name: 'Carpenter', description: 'Furniture making, woodwork & hinge repairs', category: 'Carpentry', basePrice: 199 },
+  { id: 4, name: 'Home Cleaning', description: 'Deep home, kitchen, and bathroom sanitization', category: 'Cleaning', basePrice: 299 },
+  { id: 5, name: 'AC Service & Repair', description: 'Deep foam jet service & gas refilling', category: 'Appliances', basePrice: 399 },
+  { id: 6, name: 'Painter', description: 'Interior/exterior wall painting & waterproofing', category: 'Painting', basePrice: 499 },
+  { id: 7, name: 'Vehicle Mechanic', description: 'Two & four-wheeler servicing & battery jumpstart', category: 'Automotive', basePrice: 249 },
+  { id: 8, name: 'Gardening & Lawn Care', description: 'Plant pruning, pest control & lawn mowing', category: 'Outdoor', basePrice: 199 }
 ];
 
 export const serviceIcons = {
@@ -26,47 +26,109 @@ export const serviceIcons = {
   'Plumber': '🔧',
   'Carpenter': '🪚',
   'Home Cleaning': '✨',
-  'AC Service': '❄️',
+  'AC Service & Repair': '❄️',
   'Painter': '🎨',
-  'Mechanic': '🚗',
-  'Gardening': '🌱'
+  'Vehicle Mechanic': '🚗',
+  'Gardening & Lawn Care': '🌱'
 };
 
-export function Avatar({ worker, large = false }) {
-  return <div className={'avatar ' + (large ? 'large' : '')} style={{ background: worker?.color || '#195a9b' }}>{worker?.photo || 'WS'}</div>;
+export const CITIES = ['New Delhi (NCR)', 'Mumbai', 'Bengaluru', 'Hyderabad', 'Pune', 'Chennai'];
+
+// Toast Notification Manager
+let addToastExternal = null;
+export function showToast(message, type = 'info') {
+  if (addToastExternal) addToastExternal(message, type);
 }
 
-export function Stars({ value }) {
-  return <span className="stars">★ <b>{Number(value || 0).toFixed(1)}</b></span>;
-}
+export function ToastContainer() {
+  const [toasts, setToasts] = useState([]);
 
-export function Header({ page, setPage, role, setRole, auth, onLogout }) {
+  useEffect(() => {
+    addToastExternal = (msg, type) => {
+      const id = Date.now();
+      setToasts(prev => [...prev, { id, msg, type }]);
+      setTimeout(() => {
+        setToasts(prev => prev.filter(t => t.id !== id));
+      }, 3500);
+    };
+  }, []);
+
   return (
-    <header>
-      <button className="brand" onClick={() => setPage('home')}>
-        <i>W</i> Work<span>Saathi</span>
-      </button>
-      <nav>
-        <button onClick={() => setPage('find')}>Find workers</button>
-        <button onClick={() => setPage('how')}>How it works</button>
-        <button onClick={() => setPage('about')}>About</button>
-      </nav>
+    <div className="toast-container">
+      {toasts.map(t => (
+        <div key={t.id} className="toast">
+          <span>{t.type === 'success' ? '✅' : t.type === 'error' ? '⚠️' : 'ℹ️'}</span>
+          <span>{t.msg}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function Avatar({ worker, large = false }) {
+  return (
+    <div className={large ? 'profile-avatar-lg' : 'worker-avatar'} style={{ background: worker?.color || '#0f62fe' }}>
+      {worker?.photo || worker?.name?.slice(0, 2)?.toUpperCase() || 'WS'}
+    </div>
+  );
+}
+
+export function Stars({ value, count }) {
+  return (
+    <span className="worker-rating-badge">
+      <span>★</span> {Number(value || 0).toFixed(1)} {count !== undefined && <small className="muted">({count})</small>}
+    </span>
+  );
+}
+
+/* =========================================
+   HEADER & NAVBAR
+========================================= */
+export function Header({ page, setPage, role, setRole, auth, onLogout, city, setCity }) {
+  return (
+    <header className="app-header">
+      <div className="brand" onClick={() => setPage('home')} style={{ cursor: 'pointer' }}>
+        <div className="brand-icon">W</div>
+        <div>Work<span>Saathi</span></div>
+      </div>
+
+      <div className="header-center">
+        <div className="city-badge">
+          <span>📍</span>
+          <select
+            value={city}
+            onChange={e => setCity(e.target.value)}
+            style={{ border: 'none', background: 'transparent', fontWeight: 600, outline: 'none', cursor: 'pointer' }}
+          >
+            {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+
+        <nav className="nav-links">
+          <button className={`nav-item ${page === 'find' ? 'active' : ''}`} onClick={() => setPage('find')}>Explore Pros</button>
+          <button className={`nav-item ${page === 'how' ? 'active' : ''}`} onClick={() => setPage('how')}>How It Works</button>
+          <button className={`nav-item ${page === 'about' ? 'active' : ''}`} onClick={() => setPage('about')}>Trust & Safety</button>
+        </nav>
+      </div>
+
       <div className="header-actions">
         {auth ? (
           <>
-            <button className="login" onClick={() => setPage('dashboard')}>
+            <button className="btn btn-outline btn-sm" onClick={() => setPage('dashboard')}>
               👤 {auth.name} ({auth.role})
             </button>
-            <button className="join" onClick={onLogout}>Log out</button>
+            <button className="btn btn-danger-outline btn-sm" onClick={onLogout}>Log out</button>
           </>
         ) : (
           <>
-            <button className="login" onClick={() => setPage('auth')}>Log in</button>
-            <button className="join" onClick={() => setPage('auth')}>Join WorkSaathi <span>→</span></button>
+            <button className="btn btn-outline" onClick={() => setPage('auth')}>Log in</button>
+            <button className="btn btn-primary" onClick={() => setPage('auth')}>Book a Pro ➔</button>
           </>
         )}
+
         <select
           aria-label="View role"
+          className="role-selector"
           value={role}
           onChange={e => {
             const nextRole = e.target.value;
@@ -74,224 +136,340 @@ export function Header({ page, setPage, role, setRole, auth, onLogout }) {
             setPage('dashboard');
           }}
         >
-          <option value="customer">Customer view</option>
-          <option value="worker">Worker view</option>
-          <option value="admin">Admin view</option>
+          <option value="customer">👨 Customer Portal</option>
+          <option value="worker">⚡ Worker Portal</option>
+          <option value="admin">🛡️ Admin Portal</option>
         </select>
       </div>
     </header>
   );
 }
 
+/* =========================================
+   HOME PAGE
+========================================= */
 export function Home({ setPage, setQuery, servicesList = [] }) {
   const displayServices = servicesList.length ? servicesList : fallbackServices;
 
   return (
     <>
-      <section className="hero">
-        <div className="hero-copy">
-          <div className="eyebrow">✦ INDIA'S TRUSTED LOCAL SERVICES PLATFORM</div>
-          <h1>The right person<br />for <em>every</em> job.</h1>
-          <p>Book skilled, verified local professionals for the things that matter at home.</p>
-          <div className="search-bar">
-            <span>⌕</span>
-            <input
-              aria-label="Search a service"
-              placeholder="What service do you need?"
-              onChange={e => setQuery(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && setPage('find')}
-            />
-            <button onClick={() => setPage('find')}>Find a pro <b>→</b></button>
-          </div>
-          <div className="popular">
-            <span>Popular:</span>
-            {['Electrician', 'Plumber', 'Home Cleaning', 'AC Service'].map(x => (
-              <button key={x} onClick={() => { setQuery(x); setPage('find'); }}>{x}</button>
-            ))}
-          </div>
-        </div>
-        <div className="hero-visual">
-          <div className="halo"></div>
-          <div className="house">
-            <div className="roof"></div>
-            <div className="wall">
-              <span className="window"></span>
-              <span className="door"></span>
+      <section className="hero-wrapper">
+        <div className="hero-container">
+          <div className="hero-copy">
+            <div className="hero-badge">✦ INDIA'S VERIFIED ON-DEMAND HOME SERVICES</div>
+            <h1 className="hero-title">
+              Expert Help for<br />
+              <em>Every Home</em> Need.
+            </h1>
+            <p className="hero-desc">
+              Book certified electricians, plumbers, carpenters, and appliance experts with background checks, fixed quotes, and satisfaction guarantee.
+            </p>
+
+            <div className="search-box-elevated">
+              <span className="search-icon">🔍</span>
+              <input
+                className="search-input"
+                aria-label="Search a service"
+                placeholder="What service do you need help with today?"
+                onChange={e => setQuery(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && setPage('find')}
+              />
+              <button className="btn btn-primary" onClick={() => setPage('find')}>
+                Find Pro ➔
+              </button>
+            </div>
+
+            <div className="popular-chips">
+              <span>Popular:</span>
+              {['Electrician', 'Plumber', 'Home Cleaning', 'AC Service & Repair'].map(x => (
+                <button key={x} className="popular-chip" onClick={() => { setQuery(x); setPage('find'); }}>
+                  {x}
+                </button>
+              ))}
             </div>
           </div>
-          <div className="float-card verified">✓ <span><b>Every pro verified</b><small>Background checked</small></span></div>
-          <div className="float-card rating">
-            <span className="rating-stars">★★★★★</span>
-            <b>4.8 average rating</b>
-            <small>From 10,000+ reviews</small>
+
+          <div className="hero-visual-card">
+            <div className="hero-visual-glow"></div>
+            <div className="hero-visual-bottom-glow"></div>
+            <div className="hero-card-header">
+              <h3>Live Verified Pros Near You</h3>
+              <p>Average arrival time: under 30 minutes in your sector</p>
+            </div>
+
+            <div className="pro-spotlight-list">
+              {fallbackWorkers.slice(0, 3).map(w => (
+                <div key={w.id} className="spotlight-row">
+                  <div className="spotlight-avatar" style={{ background: w.color }}>{w.photo}</div>
+                  <div className="spotlight-info">
+                    <b>{w.name} <span className="verified-icon">✓</span></b>
+                    <span>{w.role} · ★ {w.rating} ({w.reviews} jobs)</span>
+                  </div>
+                  <span className="spotlight-badge">Available Now</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="hero-guarantee">
+              <span>🛡️</span>
+              <div>
+                <b>WorkSaathi Cover Guarantee</b>
+                <p>₹10,000 damage protection on every verified booking.</p>
+              </div>
+            </div>
           </div>
-          <div className="float-card location">● <span><b>Available near you</b><small>2.4 km away</small></span></div>
         </div>
       </section>
 
-      <section className="trust-strip">
-        <div><b>10,000+</b><span>Verified professionals</span></div>
-        <div><b>50,000+</b><span>Jobs completed</span></div>
-        <div><b>4.8 / 5</b><span>Average customer rating</span></div>
-        <div><b>25+ cities</b><span>And growing every month</span></div>
+      {/* TRUST METRICS STRIP */}
+      <section className="trust-metrics-strip">
+        <div className="trust-metrics-container">
+          <div className="metric-box">
+            <div className="metric-icon">🛡️</div>
+            <div className="metric-content">
+              <strong>15,000+</strong>
+              <span>Background-Checked Pros</span>
+            </div>
+          </div>
+          <div className="metric-box">
+            <div className="metric-icon">⭐</div>
+            <div className="metric-content">
+              <strong>4.88 / 5</strong>
+              <span>Average Customer Rating</span>
+            </div>
+          </div>
+          <div className="metric-box">
+            <div className="metric-icon">⏱️</div>
+            <div className="metric-content">
+              <strong>30 Min</strong>
+              <span>Express Arrival Option</span>
+            </div>
+          </div>
+          <div className="metric-box">
+            <div className="metric-icon">📍</div>
+            <div className="metric-content">
+              <strong>25+ Cities</strong>
+              <span>Delhi-NCR, Mumbai, BLR & more</span>
+            </div>
+          </div>
+        </div>
       </section>
 
-      <section className="services section">
-        <div className="section-heading">
+      {/* SERVICES SECTION */}
+      <section className="section">
+        <div className="section-head">
           <div>
-            <div className="eyebrow">SERVICES THAT MAKE LIFE EASIER</div>
-            <h2>Whatever needs doing,<br /><em>we know someone.</em></h2>
+            <div className="eyebrow-text">BROWSE OUR SERVICES</div>
+            <h2 className="section-title">Whatever needs doing,<br /><em>we have the specialist.</em></h2>
           </div>
-          <button className="text-button" onClick={() => setPage('find')}>Explore all services <b>→</b></button>
+          <button className="btn btn-outline" onClick={() => setPage('find')}>Explore All Services ➔</button>
         </div>
-        <div className="service-grid">
+
+        <div className="services-grid">
           {displayServices.map(s => {
             const icon = serviceIcons[s.name] || '🛠️';
             return (
-              <button
-                className="service-card"
+              <div
                 key={s.id || s.name}
+                className="service-card-modern"
                 onClick={() => { setQuery(s.name); setPage('find'); }}
+                style={{ cursor: 'pointer' }}
               >
-                <span className="service-icon">{icon}</span>
-                <b>{s.name}</b>
-                <small>{s.description || 'Professional on-demand service'}</small>
-                <i>→</i>
-              </button>
+                <div className="service-card-top">
+                  <div className="service-emoji">{icon}</div>
+                  <span className="service-price-pill">Starts ₹{s.basePrice || 149}</span>
+                </div>
+                <div className="service-card-info">
+                  <h3>{s.name}</h3>
+                  <p>{s.description || 'Verified on-demand doorstep service by certified local professionals.'}</p>
+                </div>
+                <div className="service-card-foot">
+                  <span>Book Inspection</span>
+                  <span>➔</span>
+                </div>
+              </div>
             );
           })}
         </div>
       </section>
 
-      <section className="how section">
-        <div className="eyebrow">SIMPLE FROM START TO FINISH</div>
-        <h2>Getting help has never<br />been <em>this easy.</em></h2>
-        <div className="steps">
-          <div>
-            <span>01</span>
-            <b>Tell us what you need</b>
-            <p>Search by service, location, or the task you have in mind.</p>
+      {/* HOW IT WORKS */}
+      <section className="section how-section">
+        <div className="section-head" style={{ textAlign: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+          <div className="eyebrow-text">TRANSPARENT & HASSLE-FREE</div>
+          <h2 className="section-title">How WorkSaathi Works in 3 Simple Steps</h2>
+        </div>
+
+        <div className="steps-container">
+          <div className="step-card">
+            <div className="step-num">01</div>
+            <h3>Choose Service & Schedule</h3>
+            <p>Select your required task, describe the issue, and pick a convenient date & time slot.</p>
           </div>
-          <div>
-            <span>02</span>
-            <b>Choose your professional</b>
-            <p>Compare profiles, ratings, prices, and availability.</p>
+          <div className="step-card">
+            <div className="step-num">02</div>
+            <h3>Matched with Top Pro</h3>
+            <p>Our intelligent matching pairs you with a top-rated, police-verified specialist nearby.</p>
           </div>
-          <div>
-            <span>03</span>
-            <b>Book, relax, done</b>
-            <p>Pick a time that works. Track your job from start to finish.</p>
+          <div className="step-card">
+            <div className="step-num">03</div>
+            <h3>Track & Pay After Completion</h3>
+            <p>Track your technician in real-time, inspect their work, and pay securely via UPI or cash.</p>
           </div>
         </div>
       </section>
 
-      <section className="cta">
-        <div>
-          <div className="eyebrow">FOR SKILLED PROFESSIONALS</div>
-          <h2>Great work deserves<br /><em>great opportunities.</em></h2>
-          <p>Join thousands of trusted professionals growing their businesses with WorkSaathi.</p>
-          <button className="light-button" onClick={() => setPage('auth')}>Become a WorkSaathi pro <b>→</b></button>
+      {/* CTA SECTION */}
+      <section className="section">
+        <div style={{ background: 'linear-gradient(135deg, #0f62fe 0%, #0043ce 100%)', borderRadius: '20px', padding: '50px 40px', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '30px', flexWrap: 'wrap' }}>
+          <div>
+            <h2 style={{ fontFamily: 'Fraunces, serif', fontSize: '36px', marginBottom: '12px' }}>Are you a skilled professional?</h2>
+            <p style={{ fontSize: '16px', color: '#dbeafe', maxWidth: '500px' }}>Join thousands of electricians, plumbers, and technicians earning ₹40,000+ monthly with flexible hours and weekly payouts.</p>
+          </div>
+          <button className="btn btn-secondary btn-lg" onClick={() => setPage('auth')}>
+            Partner with WorkSaathi ➔
+          </button>
         </div>
-        <div className="cta-art">✦<span>Earn on your terms</span><span>Build your reputation</span></div>
       </section>
+
       <Footer />
     </>
   );
 }
 
-export function FindWorkers({ query, setQuery, setPage, setSelected, workerList = [], servicesList = [], loading, error }) {
+/* =========================================
+   FIND WORKERS
+========================================= */
+export function FindWorkers({ query, setQuery, setPage, setSelected, workerList = [], servicesList = [], loading, error, city }) {
   const [onlyAvailable, setOnlyAvailable] = useState(false);
   const [selectedService, setSelectedService] = useState('All');
   const [sort, setSort] = useState('Recommended');
+  const [priceMax, setPriceMax] = useState(1500);
 
   const result = useMemo(() => {
     return workerList.filter(w => {
       const matchAvail = !onlyAvailable || w.available;
-      const matchService = selectedService === 'All' || (w.skills && w.skills.includes(selectedService)) || w.role === selectedService;
+      const matchService = selectedService === 'All' || (w.skills && w.skills.some(s => s.toLowerCase().includes(selectedService.toLowerCase()))) || w.role === selectedService;
+      const matchPrice = (w.rate || 500) <= priceMax;
       const matchQuery = !query || `${w.role} ${w.name} ${(w.skills || []).join(' ')}`.toLowerCase().includes(query.toLowerCase());
-      return matchAvail && matchService && matchQuery;
+      return matchAvail && matchService && matchPrice && matchQuery;
     }).sort((a, b) => {
       if (sort === 'Rating') return b.rating - a.rating;
-      if (sort === 'Price') return a.rate - b.rate;
+      if (sort === 'Price: Low to High') return a.rate - b.rate;
+      if (sort === 'Price: High to Low') return b.rate - a.rate;
       return a.distance - b.distance;
     });
-  }, [query, onlyAvailable, selectedService, sort, workerList]);
+  }, [query, onlyAvailable, selectedService, sort, priceMax, workerList]);
 
   return (
-    <main className="finder section">
-      <div className="breadcrumb">Home / Find workers</div>
-      <h1>Find trusted professionals<br /><em>near you.</em></h1>
+    <main className="finder-page">
+      <div className="finder-header">
+        <div className="breadcrumb">Home / Find Professionals / {city}</div>
+        <h1>Certified Professionals in <em>{city}</em></h1>
+      </div>
 
-      <div className="finder-search">
-        <span>⌕</span>
-        <input
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          placeholder="Search by worker name, trade, or skill..."
-        />
-        <button onClick={() => {}}>Search</button>
+      <div className="finder-controls">
+        <div className="finder-search-bar">
+          <span>🔍</span>
+          <input
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search by specialty (e.g. Electrician, RO Water Repair, Modular Kitchen)..."
+          />
+        </div>
+        <button className="btn btn-primary" onClick={() => {}}>Search</button>
       </div>
 
       <div className="finder-layout">
-        <aside>
-          <div className="filter-head">
+        <aside className="finder-sidebar">
+          <div className="filter-header">
             <b>Filters</b>
-            <button onClick={() => { setQuery(''); setSelectedService('All'); setOnlyAvailable(false); }}>Reset all</button>
+            <button className="btn btn-sm btn-outline" onClick={() => { setQuery(''); setSelectedService('All'); setOnlyAvailable(false); setPriceMax(1500); }}>Reset</button>
           </div>
-          <label>
-            Service
-            <select value={selectedService} onChange={e => setSelectedService(e.target.value)}>
-              <option value="All">All services</option>
+
+          <div className="filter-group">
+            <label>Service Category</label>
+            <select className="filter-select" value={selectedService} onChange={e => setSelectedService(e.target.value)}>
+              <option value="All">All Categories</option>
               {servicesList.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
             </select>
-          </label>
-          <label>
-            Location
-            <select>
-              <option>New Delhi (Default)</option>
-              <option>Within 5 km</option>
-              <option>Within 15 km</option>
-            </select>
-          </label>
-          <label>
-            Price range
-            <div className="price">₹100 <span>—</span> ₹1,500/day</div>
-          </label>
-          <label className="check">
-            <input type="checkbox" checked={onlyAvailable} onChange={e => setOnlyAvailable(e.target.checked)} />
-            Available today
-          </label>
-          <label className="check">
-            <input type="checkbox" defaultChecked readOnly />
-            Verified professionals only
-          </label>
+          </div>
+
+          <div className="filter-group">
+            <label>Max Budget: ₹{priceMax}</label>
+            <input
+              type="range"
+              min="200"
+              max="2000"
+              step="50"
+              value={priceMax}
+              onChange={e => setPriceMax(Number(e.target.value))}
+              style={{ width: '100%', accentColor: 'var(--primary)' }}
+            />
+          </div>
+
+          <div className="filter-group">
+            <label className="checkbox-label">
+              <input type="checkbox" checked={onlyAvailable} onChange={e => setOnlyAvailable(e.target.checked)} />
+              Available for Instant Visit
+            </label>
+            <label className="checkbox-label">
+              <input type="checkbox" defaultChecked readOnly />
+              100% Background Verified Only
+            </label>
+          </div>
         </aside>
 
-        <div className="worker-results">
-          <div className="result-head">
-            <span><b>{result.length} professionals</b> near New Delhi</span>
-            <label>
-              Sort:
-              <select value={sort} onChange={e => setSort(e.target.value)}>
+        <div className="worker-results-column">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--slate)' }}>
+              Showing <b>{result.length} certified professionals</b> in {city}
+            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+              <span>Sort by:</span>
+              <select className="filter-select" style={{ width: 'auto' }} value={sort} onChange={e => setSort(e.target.value)}>
                 <option>Recommended</option>
                 <option>Rating</option>
-                <option>Price</option>
+                <option>Price: Low to High</option>
+                <option>Price: High to Low</option>
               </select>
-            </label>
+            </div>
           </div>
 
           {loading ? (
-            <div className="empty"><strong>Finding local professionals…</strong></div>
-          ) : error ? (
-            <div className="empty"><strong>Couldn’t load live workers</strong><span>{error}</span></div>
-          ) : result.length ? (
-            result.map(w => (
-              <WorkerCard key={w.id} worker={w} onView={() => { setSelected(w); setPage('profile'); }} />
-            ))
+            <div className="worker-result-card" style={{ justifyContent: 'center', padding: '40px' }}>
+              <b>Loading live verified specialists...</b>
+            </div>
+          ) : result.length === 0 ? (
+            <div className="worker-result-card" style={{ flexDirection: 'column', textAlign: 'center', padding: '50px' }}>
+              <h3>No professionals match your current filters</h3>
+              <p style={{ color: 'var(--muted)', margin: '8px 0 16px' }}>Try widening your price range or search terms.</p>
+              <button className="btn btn-primary btn-sm" onClick={() => { setQuery(''); setSelectedService('All'); setOnlyAvailable(false); }}>Reset Filters</button>
+            </div>
           ) : (
-            <div className="empty">
-              <strong>No workers found</strong>
-              <span>Try adjusting your search filters or selected category.</span>
+            <div className="worker-list-results">
+              {result.map(w => (
+                <article className="worker-result-card" key={w.id}>
+                  <Avatar worker={w} />
+                  <div className="worker-main">
+                    <h3>{w.name} <span className="verified-icon">✓</span></h3>
+                    <div className="worker-meta-line">{w.role} · {w.exp || 4}+ years experience · {w.distance ? `${w.distance.toFixed(1)} km away` : 'Near you'}</div>
+                    <div><Stars value={w.rating} count={w.reviews} /></div>
+                    <div className="worker-skills-tags">
+                      {(w.skills || []).slice(0, 4).map(s => <span key={s} className="skill-tag">{s}</span>)}
+                    </div>
+                  </div>
+                  <div className="worker-side-action">
+                    <div className={`avail-badge ${w.available ? 'available' : 'booked'}`}>
+                      ● {w.available ? 'Available Today' : 'Booked'}
+                    </div>
+                    <div className="worker-price-tag">₹{w.rate}<small> / visit</small></div>
+                    <button className="btn btn-primary btn-sm" onClick={() => { setSelected(w); setPage('profile'); }}>
+                      View Profile & Book
+                    </button>
+                  </div>
+                </article>
+              ))}
             </div>
           )}
         </div>
@@ -300,83 +478,66 @@ export function FindWorkers({ query, setQuery, setPage, setSelected, workerList 
   );
 }
 
-export function WorkerCard({ worker, onView }) {
-  return (
-    <article className="worker-card">
-      <Avatar worker={worker} />
-      <div className="worker-info">
-        <h3>{worker.name} <span className="verified-mini">✓</span></h3>
-        <p>{worker.role} · {worker.exp || 3}+ years exp.</p>
-        <div><Stars value={worker.rating} /> <span className="muted">({worker.reviews} reviews)</span></div>
-        <div className="tags">
-          {(worker.skills || []).slice(0, 3).map(x => <span key={x}>{x}</span>)}
-        </div>
-      </div>
-      <div className="worker-meta">
-        <span className={worker.available ? 'availability' : 'unavailable'}>
-          ● {worker.available ? 'Available today' : 'Currently booked'}
-        </span>
-        <b>₹{worker.rate}<small>/ day</small></b>
-        <span className="muted">⌖ {worker.distance ? `${worker.distance.toFixed(1)} km away` : 'Near you'}</span>
-        <button className="outline-button" onClick={onView}>View profile</button>
-      </div>
-    </article>
-  );
-}
-
+/* =========================================
+   WORKER PROFILE PAGE
+========================================= */
 export function Profile({ worker, setPage, setBooking }) {
   return (
-    <main className="profile section">
-      <button className="back" onClick={() => setPage('find')}>← Back to results</button>
-      <div className="profile-grid">
-        <div>
-          <section className="profile-hero">
+    <main className="profile-page">
+      <button className="btn btn-outline btn-sm" onClick={() => setPage('find')} style={{ marginBottom: '24px' }}>
+        ← Back to Search
+      </button>
+
+      <div className="profile-layout">
+        <div className="profile-main-card">
+          <div className="profile-header-strip">
             <Avatar worker={worker} large />
-            <div className="profile-top">
-              <div>
-                <h1>{worker.name} <span className="verified-mini">✓</span></h1>
-                <p>{worker.role} · New Delhi · {worker.exp || 3}+ years experience</p>
-                <Stars value={worker.rating} /> <span className="muted">{worker.reviews} reviews</span>
+            <div className="profile-title-area">
+              <h1>{worker.name} <span className="verified-icon">✓</span></h1>
+              <p style={{ color: 'var(--slate)', fontSize: '15px' }}>{worker.role} Specialist · {worker.exp || 5}+ Years Field Experience</p>
+              <div style={{ marginTop: '6px' }}><Stars value={worker.rating} count={worker.reviews} /></div>
+            </div>
+          </div>
+
+          <div className="profile-section-block">
+            <h3>About {worker.name}</h3>
+            <p>{worker.bio || `Certified and background-verified ${worker.role.toLowerCase()} with extensive experience across residential societies and commercial facilities. Known for prompt diagnostic accuracy, neat cable routing, and transparent billing.`}</p>
+          </div>
+
+          <div className="profile-section-block">
+            <h3>Specialized Skills & Toolsets</h3>
+            <div className="worker-skills-tags">
+              {(worker.skills || []).map(s => <span key={s} className="skill-tag" style={{ padding: '6px 12px', fontSize: '13px' }}>{s}</span>)}
+            </div>
+          </div>
+
+          <div className="profile-section-block">
+            <h3>Verified Customer Testimonials</h3>
+            <div style={{ background: 'var(--light-bg)', padding: '18px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', marginTop: '12px' }}>
+              <p style={{ fontStyle: 'italic', color: 'var(--dark)', fontSize: '14px' }}>
+                “Arrived right on time within 25 minutes of booking. Inspected the circuit board, replaced the faulty MCB, and charged exactly the estimated amount. Very respectful and tidy work.”
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px', fontSize: '12px', color: 'var(--muted)' }}>
+                <b>— Rohit Malhotra, Verified Resident</b>
+                <span>★★★★★ 5.0</span>
               </div>
-              <span className={worker.available ? 'availability' : 'unavailable'}>
-                ● {worker.available ? 'Available today' : 'Unavailable'}
-              </span>
             </div>
-          </section>
-
-          <section className="profile-section">
-            <h3>About {worker.name.split(' ')[0]}</h3>
-            <p>{worker.bio || `Reliable and detail-oriented ${worker.role.toLowerCase()} with ${worker.exp || 3}+ years of hands-on experience in residential and commercial maintenance. Known for clear communication, tidy work, and punctuality.`}</p>
-          </section>
-
-          <section className="profile-section">
-            <h3>Skills & services</h3>
-            <div className="tags big">
-              {(worker.skills || []).map(x => <span key={x}>{x}</span>)}
-            </div>
-          </section>
-
-          <section className="profile-section">
-            <div className="review-title">
-              <h3>Verified customer reviews</h3>
-              <button>See all reviews →</button>
-            </div>
-            <blockquote>
-              “Very professional and punctual. Explained the issue clearly and fixed it quickly. Highly recommend!”
-              <footer>— Ankit M., verified customer</footer>
-            </blockquote>
-          </section>
+          </div>
         </div>
 
-        <aside className="booking-card">
-          <span className="eyebrow">STARTING FROM</span>
-          <strong>₹{worker.rate}<small> / day</small></strong>
-          <p>Final price is agreed with your professional before work begins.</p>
-          <button className="primary wide" onClick={() => setBooking(true)}>Request service <b>→</b></button>
-          <div className="booking-checks">
-            <span>✓ No booking fees</span>
-            <span>✓ Pay after completion</span>
-            <span>✓ Verified professional guarantee</span>
+        <aside className="booking-sticky-card">
+          <span className="eyebrow-text">STANDARD INSPECTION</span>
+          <div className="sticky-price">₹{worker.rate}<small> / visit</small></div>
+          <p style={{ fontSize: '13px', color: 'var(--muted)' }}>Transparent upfront pricing with zero hidden cancellation fees.</p>
+          
+          <button className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: '18px' }} onClick={() => setBooking(true)}>
+            Schedule Service Now ➔
+          </button>
+
+          <div className="booking-perks">
+            <div>✓ <b>WorkSaathi Shield</b>: ₹10,000 damage cover</div>
+            <div>✓ <b>Pay after service</b> (UPI, Cash, or Card)</div>
+            <div>✓ <b>30-Day Workmanship Warranty</b></div>
           </div>
         </aside>
       </div>
@@ -384,23 +545,39 @@ export function Profile({ worker, setPage, setBooking }) {
   );
 }
 
+/* =========================================
+   INTERACTIVE BOOKING MODAL
+========================================= */
 export function Booking({ worker, close, setPage, services = [], auth, onJobCreated }) {
   const [step, setStep] = useState(1);
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [coupon, setCoupon] = useState('');
+  const [discount, setDiscount] = useState(0);
+
   const matchedService = services.find(s => (worker.skills || []).includes(s.name)) || services[0];
   const [details, setDetails] = useState({
     serviceId: matchedService?.id || (services[0]?.id || 1),
     description: '',
-    address: 'Flat 402, Green Valley Apartments, New Delhi',
+    address: 'Flat 302, Palm Heights, Sector 45, Gurgaon',
     date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
     time: '10:00 AM'
   });
 
-  const next = async () => {
-    if (step < 3) return setStep(step + 1);
+  const applyCoupon = () => {
+    if (coupon.trim().toUpperCase() === 'FIRST100') {
+      setDiscount(100);
+      showToast('Coupon FIRST100 applied! ₹100 discount added.', 'success');
+    } else {
+      showToast('Invalid coupon code. Try FIRST100', 'error');
+    }
+  };
+
+  const finalAmount = Math.max(99, (worker.rate || 499) - discount + 49); // +49 safety fee
+
+  const handleConfirm = async () => {
     if (!auth) {
-      setMessage('Please log in before sending a service request.');
+      setMessage('Please log in before sending a service booking.');
       return;
     }
     setSubmitting(true);
@@ -409,13 +586,14 @@ export function Booking({ worker, close, setPage, services = [], auth, onJobCrea
       await api.createJob({
         workerId: worker.id,
         serviceId: Number(details.serviceId),
-        title: `${worker.role} request`,
-        description: details.description || 'On-demand service booking via WorkSaathi web app',
+        title: `${worker.role} Service Booking`,
+        description: details.description || 'Standard service request via WorkSaathi platform',
         scheduledDate: `${details.date}T10:00:00`,
         scheduledTime: details.time,
         address: details.address,
-        estimatedPrice: worker.rate
+        estimatedPrice: finalAmount
       });
+      showToast('Booking submitted successfully! Specialist notified.', 'success');
       if (onJobCreated) onJobCreated();
       close();
       setPage('dashboard');
@@ -427,99 +605,200 @@ export function Booking({ worker, close, setPage, services = [], auth, onJobCrea
   };
 
   return (
-    <div className="modal-backdrop">
-      <section className="modal">
-        <button className="modal-close" onClick={close}>×</button>
-        <div className="progress">
-          <span className={step >= 1 ? 'active' : ''}>1<br /><small>Details</small></span>
-          <i></i>
-          <span className={step >= 2 ? 'active' : ''}>2<br /><small>Schedule</small></span>
-          <i></i>
-          <span className={step >= 3 ? 'active' : ''}>3<br /><small>Confirm</small></span>
+    <div className="modal-overlay">
+      <div className="modal-window">
+        <button className="close-btn" onClick={close}>✕</button>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+          <div style={{ background: 'var(--primary-light)', color: 'var(--primary)', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 800 }}>
+            Step {step} of 2
+          </div>
+          <h2 style={{ fontSize: '20px', fontWeight: 800 }}>
+            {step === 1 ? 'Describe Your Problem & Schedule' : 'Confirm & Review Summary'}
+          </h2>
         </div>
 
-        {step === 1 && (
-          <>
-            <h2>Tell {worker.name.split(' ')[0]} what you need</h2>
-            <label>
-              Service
-              <select value={details.serviceId} onChange={e => setDetails({ ...details, serviceId: e.target.value })}>
+        {step === 1 ? (
+          <div>
+            <div className="filter-group">
+              <label>Service Category</label>
+              <select
+                className="filter-select"
+                value={details.serviceId}
+                onChange={e => setDetails({ ...details, serviceId: e.target.value })}
+              >
                 {services.map(s => <option key={s.id} value={s.id}>{s.name} (Base: ₹{s.basePrice})</option>)}
               </select>
-            </label>
-            <label>
-              Describe the problem
+            </div>
+
+            <div className="filter-group">
+              <label>Service Address</label>
+              <input
+                className="filter-input"
+                value={details.address}
+                onChange={e => setDetails({ ...details, address: e.target.value })}
+              />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div className="filter-group">
+                <label>Date</label>
+                <input
+                  type="date"
+                  className="filter-input"
+                  value={details.date}
+                  onChange={e => setDetails({ ...details, date: e.target.value })}
+                />
+              </div>
+              <div className="filter-group">
+                <label>Time Slot</label>
+                <select
+                  className="filter-select"
+                  value={details.time}
+                  onChange={e => setDetails({ ...details, time: e.target.value })}
+                >
+                  <option>10:00 AM - 12:00 PM</option>
+                  <option>01:00 PM - 03:00 PM</option>
+                  <option>04:00 PM - 06:00 PM</option>
+                  <option>07:00 PM - 09:00 PM</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="filter-group">
+              <label>Instructions / Issue Description</label>
               <textarea
+                className="filter-input"
+                rows="3"
+                placeholder="E.g. Main switchboard tripping frequently, please bring 32A MCB."
                 value={details.description}
                 onChange={e => setDetails({ ...details, description: e.target.value })}
-                placeholder="For example: AC is not cooling properly and making a buzzing noise."
               />
-            </label>
-          </>
-        )}
-
-        {step === 2 && (
-          <>
-            <h2>When should they visit?</h2>
-            <label>
-              Service Address
-              <input value={details.address} onChange={e => setDetails({ ...details, address: e.target.value })} />
-            </label>
-            <div className="two-inputs">
-              <label>
-                Date
-                <input type="date" value={details.date} onChange={e => setDetails({ ...details, date: e.target.value })} />
-              </label>
-              <label>
-                Time Slot
-                <select value={details.time} onChange={e => setDetails({ ...details, time: e.target.value })}>
-                  <option>10:00 AM</option>
-                  <option>01:00 PM</option>
-                  <option>04:00 PM</option>
-                  <option>07:00 PM</option>
-                </select>
-              </label>
             </div>
-          </>
-        )}
 
-        {step === 3 && (
-          <>
-            <h2>Ready to submit request?</h2>
-            <div className="request-summary">
-              <Avatar worker={worker} />
-              <div>
-                <b>{worker.name}</b>
-                <span>{worker.role}</span>
-                <span>{details.date} · {details.time}</span>
+            <button className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: '10px' }} onClick={() => setStep(2)}>
+              Proceed to Price Breakdown ➔
+            </button>
+          </div>
+        ) : (
+          <div>
+            <div style={{ background: 'var(--light-bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '16px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span>Standard Inspection Fee</span>
+                <b>₹{worker.rate || 499}</b>
               </div>
-              <strong>₹{worker.rate}<small> est.</small></strong>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', color: 'var(--slate)', fontSize: '13px' }}>
+                <span>WorkSaathi Shield & Safety Fee</span>
+                <span>+ ₹49</span>
+              </div>
+              {discount > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', color: 'var(--secondary)', fontSize: '13px', fontWeight: 700 }}>
+                  <span>Promo Code Discount (FIRST100)</span>
+                  <span>- ₹{discount}</span>
+                </div>
+              )}
+              <div style={{ borderTop: '1px solid var(--border)', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: 800 }}>
+                <span>Estimated Total</span>
+                <span style={{ color: 'var(--primary)' }}>₹{finalAmount}</span>
+              </div>
             </div>
-            <p className="muted" style={{ marginTop: '12px' }}>
-              The professional will review your request and confirm availability directly.
-            </p>
-          </>
-        )}
 
-        {message && <p className="form-error">{message}</p>}
-        <button className="primary wide" disabled={submitting} onClick={next}>
-          {submitting ? 'Submitting…' : step === 3 ? 'Confirm & Send Request' : 'Continue'} <b>→</b>
-        </button>
-      </section>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+              <input
+                className="filter-input"
+                placeholder="Enter Promo Code (e.g. FIRST100)"
+                value={coupon}
+                onChange={e => setCoupon(e.target.value)}
+              />
+              <button className="btn btn-outline" onClick={applyCoupon}>Apply</button>
+            </div>
+
+            <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '18px' }}>
+              💡 <b>Payment Mode:</b> Pay securely after the technician completes the service via UPI QR Code or Cash.
+            </div>
+
+            {message && <div style={{ color: 'var(--danger)', marginBottom: '12px', fontSize: '13px' }}>{message}</div>}
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button className="btn btn-outline" onClick={() => setStep(1)}>Back</button>
+              <button className="btn btn-primary btn-lg" style={{ flex: 1 }} disabled={submitting} onClick={handleConfirm}>
+                {submitting ? 'Submitting Booking...' : 'Confirm Booking ➔'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
+/* =========================================
+   LIVE CHAT MESSENGER MODAL
+========================================= */
+export function ChatModal({ job, auth, close }) {
+  const [messages, setMessages] = useState([
+    { id: 1, sender: 'system', text: `Chat connected with ${job.workerName || 'Specialist'}. Your contact numbers are masked for privacy.` },
+    { id: 2, sender: 'other', text: `Hello ${auth?.name || 'Sir/Ma\'am'}, I have received your booking for ${job.title}. I am on the way.` }
+  ]);
+  const [text, setText] = useState('');
+
+  const send = e => {
+    if (e) e.preventDefault();
+    if (!text.trim()) return;
+    const userMsg = { id: Date.now(), sender: 'me', text: text.trim() };
+    setMessages(prev => [...prev, userMsg]);
+    setText('');
+
+    // Simulated technician response
+    setTimeout(() => {
+      setMessages(prev => [...prev, { id: Date.now() + 1, sender: 'other', text: 'Understood! I will reach your gate in 10-15 minutes.' }]);
+    }, 1500);
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-window" style={{ width: '480px' }}>
+        <button className="close-btn" onClick={close}>✕</button>
+        <h3 style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          💬 Direct Chat: {job.workerName || 'Assigned Specialist'}
+        </h3>
+
+        <div className="chat-box-container">
+          <div className="chat-messages-area">
+            {messages.map(m => (
+              <div key={m.id} className={`chat-bubble ${m.sender === 'me' ? 'sent' : m.sender === 'system' ? 'system' : 'received'}`}>
+                {m.text}
+              </div>
+            ))}
+          </div>
+
+          <form className="chat-input-bar" onSubmit={send}>
+            <input
+              placeholder="Type message to technician..."
+              value={text}
+              onChange={e => setText(e.target.value)}
+            />
+            <button type="submit" className="btn btn-primary">Send</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================
+   CUSTOMER DASHBOARD
+========================================= */
 export function CustomerDashboard({ setRole, setPage, setSelected, workerList = [], auth }) {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState('');
+  const [activeChatJob, setActiveChatJob] = useState(null);
 
   const loadJobs = () => {
     setLoading(true);
     api.customerJobs()
       .then(data => setJobs(data || []))
-      .catch(err => setMsg(err.message))
+      .catch(err => showToast(err.message, 'error'))
       .finally(() => setLoading(false));
   };
 
@@ -530,9 +809,10 @@ export function CustomerDashboard({ setRole, setPage, setSelected, workerList = 
   const handleCancel = async (jobId) => {
     try {
       await api.cancelJob(jobId);
+      showToast('Booking cancelled successfully', 'info');
       loadJobs();
     } catch (e) {
-      alert(e.message);
+      showToast(e.message, 'error');
     }
   };
 
@@ -541,68 +821,70 @@ export function CustomerDashboard({ setRole, setPage, setSelected, workerList = 
   const totalSpent = completedJobs.reduce((acc, curr) => acc + (curr.finalPrice || curr.estimatedPrice || 0), 0);
 
   return (
-    <main className="dashboard">
-      <div className="dash-top">
+    <main className="dashboard-page">
+      <div className="dashboard-hero">
         <div>
-          <span className="eyebrow">CUSTOMER PORTAL</span>
-          <h1>Welcome back, {auth?.name || 'Customer'} <span>👋</span></h1>
-          <p>Manage your bookings and discover verified professionals.</p>
+          <div className="eyebrow-text">CUSTOMER CONTROL CENTER</div>
+          <h1>Welcome back, {auth?.name || 'Customer'} 👋</h1>
+          <p style={{ color: 'var(--muted)' }}>Manage live bookings, contact assigned pros, and view past history.</p>
         </div>
-        <button className="role-switch" onClick={() => setRole('worker')}>View worker portal →</button>
+        <button className="btn btn-primary" onClick={() => setPage('find')}>+ Book New Service</button>
       </div>
 
-      <div className="dash-search" onClick={() => setPage('find')}>
-        ⌕ <span>Search for a service or professional</span><b>→</b>
+      <div className="stats-grid">
+        <div className="stat-card-modern">
+          <strong>{activeJobs.length}</strong>
+          <span>Active Bookings</span>
+        </div>
+        <div className="stat-card-modern">
+          <strong>{completedJobs.length}</strong>
+          <span>Completed Orders</span>
+        </div>
+        <div className="stat-card-modern">
+          <strong>₹{totalSpent.toLocaleString()}</strong>
+          <span>Total Spent</span>
+        </div>
+        <div className="stat-card-modern">
+          <strong>4.9 ★</strong>
+          <span>Customer Trust Score</span>
+        </div>
       </div>
 
-      <div className="stat-row">
-        <Stat num={activeJobs.length.toString()} label="Active bookings" />
-        <Stat num={completedJobs.length.toString()} label="Completed jobs" />
-        <Stat num={`₹${totalSpent.toLocaleString()}`} label="Total spent" />
-        <Stat num="4.9 ★" label="Avg. rating given" />
-      </div>
-
-      <section className="dash-section">
-        <div className="section-heading">
-          <div>
-            <h2>My bookings ({jobs.length})</h2>
-            <p>Live status of your requested and in-progress jobs.</p>
-          </div>
-          <button className="text-button" onClick={loadJobs}>Refresh bookings ↻</button>
+      <section style={{ marginBottom: '40px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+          <h2>My Service Bookings ({jobs.length})</h2>
+          <button className="btn btn-outline btn-sm" onClick={loadJobs}>Refresh ↻</button>
         </div>
 
         {loading ? (
-          <div className="empty"><strong>Loading bookings…</strong></div>
+          <div className="job-card-row" style={{ justifyContent: 'center' }}>Loading your bookings...</div>
         ) : jobs.length === 0 ? (
-          <div className="empty">
-            <strong>No bookings yet</strong>
-            <span>Search for a professional and request a service!</span>
-            <button className="primary" style={{ alignSelf: 'center', marginTop: '12px' }} onClick={() => setPage('find')}>
-              Find professionals →
-            </button>
+          <div className="job-card-row" style={{ flexDirection: 'column', textAlign: 'center', padding: '40px' }}>
+            <h3>You have no bookings yet</h3>
+            <p style={{ color: 'var(--muted)', margin: '8px 0 16px' }}>Need an electrician, plumber, or cleaning service?</p>
+            <button className="btn btn-primary btn-sm" onClick={() => setPage('find')}>Explore Verified Pros ➔</button>
           </div>
         ) : (
           jobs.map(job => (
-            <div className="active-job" key={job.id}>
-              <div className="job-icon">{serviceIcons[job.serviceName] || '🔧'}</div>
-              <div className="job-main">
-                <span className={`status-badge ${job.status}`}>
-                  ● {job.status.replace(/_/g, ' ')}
-                </span>
-                <h3>{job.title} ({job.serviceName})</h3>
-                <p>{job.address} · Est: ₹{job.estimatedPrice || 500}</p>
-                <small className="muted">{job.description}</small>
+            <div className="job-card-row" key={job.id}>
+              <div className="job-details-group">
+                <div className="job-type-icon">{serviceIcons[job.serviceName] || '🔧'}</div>
+                <div className="job-info-text">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span className={`job-status-pill ${job.status}`}>● {job.status.replace(/_/g, ' ')}</span>
+                    <small style={{ color: 'var(--muted)' }}>OTP: <b>{3410 + (job.id % 900)}</b></small>
+                  </div>
+                  <h3>{job.title} ({job.serviceName})</h3>
+                  <p>{job.address} · Est: ₹{job.estimatedPrice || 500}</p>
+                </div>
               </div>
-              <div className="job-person">
-                <div className="avatar" style={{ background: '#195a9b' }}>{job.workerName ? job.workerName.slice(0, 2).toUpperCase() : 'WS'}</div>
-                <span>
-                  <b>{job.workerName || 'Assigned Professional'}</b>
-                  <small>{job.scheduledTime || 'Scheduled'}</small>
-                </span>
-              </div>
-              <div className="job-actions">
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <button className="btn btn-outline btn-sm" onClick={() => setActiveChatJob(job)}>
+                  💬 Chat Pro
+                </button>
                 {['REQUESTED', 'ACCEPTED'].includes(job.status) && (
-                  <button className="outline-button" style={{ color: '#b53939', borderColor: '#b53939' }} onClick={() => handleCancel(job.id)}>
+                  <button className="btn btn-danger-outline btn-sm" onClick={() => handleCancel(job.id)}>
                     Cancel
                   </button>
                 )}
@@ -612,46 +894,26 @@ export function CustomerDashboard({ setRole, setPage, setSelected, workerList = 
         )}
       </section>
 
-      <section className="dash-section">
-        <div className="section-heading">
-          <div>
-            <h2>Recommended for you</h2>
-            <p>Based on what people in your area are booking.</p>
-          </div>
-          <button className="text-button" onClick={() => setPage('find')}>View all →</button>
-        </div>
-        <div className="recommend-grid">
-          {workerList.slice(0, 3).map(w => (
-            <div className="recommend-card" key={w.id}>
-              <div className="recommend-top">
-                <Avatar worker={w} />
-                <span className="availability">● {w.available ? 'Available' : 'Booked'}</span>
-              </div>
-              <h3>{w.name} <span className="verified-mini">✓</span></h3>
-              <p>{w.role}</p>
-              <Stars value={w.rating} /> <span className="muted"> ({w.reviews})</span>
-              <div className="recommend-bottom">
-                <b>₹{w.rate}<small>/day</small></b>
-                <button onClick={() => { setSelected(w); setPage('profile'); }}>View profile →</button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      {activeChatJob && (
+        <ChatModal job={activeChatJob} auth={auth} close={() => setActiveChatJob(null)} />
+      )}
     </main>
   );
 }
 
+/* =========================================
+   WORKER DASHBOARD
+========================================= */
 export function WorkerDashboard({ auth, setRole }) {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState('');
+  const [isAvailable, setIsAvailable] = useState(true);
 
   const loadWorkerJobs = () => {
     setLoading(true);
     api.workerJobs()
       .then(data => setJobs(data || []))
-      .catch(err => setMsg(err.message))
+      .catch(err => showToast(err.message, 'error'))
       .finally(() => setLoading(false));
   };
 
@@ -659,12 +921,13 @@ export function WorkerDashboard({ auth, setRole }) {
     loadWorkerJobs();
   }, []);
 
-  const handleAction = async (actionFn, jobId) => {
+  const handleAction = async (actionFn, jobId, successMsg) => {
     try {
       await actionFn(jobId);
+      showToast(successMsg || 'Job status updated', 'success');
       loadWorkerJobs();
     } catch (e) {
-      alert(e.message);
+      showToast(e.message, 'error');
     }
   };
 
@@ -674,90 +937,109 @@ export function WorkerDashboard({ auth, setRole }) {
   const todayEarnings = completedJobs.reduce((acc, curr) => acc + (curr.finalPrice || curr.estimatedPrice || 0), 0);
 
   return (
-    <main className="dashboard worker-dash">
-      <div className="dash-top">
+    <main className="dashboard-page">
+      <div className="dashboard-hero">
         <div>
-          <span className="eyebrow">WORKER WORKSPACE</span>
-          <h1>Welcome, {auth?.name || 'Raj Kumar'} <span>👋</span></h1>
-          <p>Manage incoming requests and update your active jobs.</p>
+          <div className="eyebrow-text">PARTNER WORKSPACE</div>
+          <h1>Pro Dashboard: {auth?.name || 'Raj Kumar'} ⚡</h1>
+          <p style={{ color: 'var(--muted)' }}>Manage incoming job requests, update travel status, and view weekly earnings.</p>
         </div>
-        <button className="availability-toggle">● You’re Available</button>
+        <button
+          className={`btn ${isAvailable ? 'btn-secondary' : 'btn-outline'}`}
+          onClick={() => {
+            setIsAvailable(!isAvailable);
+            showToast(`Status updated: ${!isAvailable ? 'Available for Jobs' : 'Offline'}`, 'info');
+          }}
+        >
+          ● {isAvailable ? 'You are Available Online' : 'Currently Offline'}
+        </button>
       </div>
 
-      <div className="stat-row">
-        <Stat num={pendingRequests.length.toString()} label="Pending requests" />
-        <Stat num={activeJobs.length.toString()} label="Active jobs" />
-        <Stat num={`₹${todayEarnings.toLocaleString()}`} label="Earnings" />
-        <Stat num={completedJobs.length.toString()} label="Completed jobs" />
+      <div className="stats-grid">
+        <div className="stat-card-modern">
+          <strong>{pendingRequests.length}</strong>
+          <span>New Job Requests</span>
+        </div>
+        <div className="stat-card-modern">
+          <strong>{activeJobs.length}</strong>
+          <span>Jobs In-Progress</span>
+        </div>
+        <div className="stat-card-modern">
+          <strong>₹{todayEarnings.toLocaleString()}</strong>
+          <span>Today's Earnings</span>
+        </div>
+        <div className="stat-card-modern">
+          <strong>4.9 ★</strong>
+          <span>Worker Rating</span>
+        </div>
       </div>
 
-      <section className="dash-section">
-        <div className="section-heading">
-          <div>
-            <h2>Service Requests ({pendingRequests.length} pending)</h2>
-            <p>Respond to customer requests to secure bookings.</p>
-          </div>
-          <button className="text-button" onClick={loadWorkerJobs}>Refresh ↻</button>
-        </div>
-
+      {/* NEW REQUESTS */}
+      <section style={{ marginBottom: '36px' }}>
+        <h2 style={{ marginBottom: '14px' }}>New Incoming Requests ({pendingRequests.length})</h2>
         {pendingRequests.length === 0 ? (
-          <div className="empty">
-            <strong>No new pending requests</strong>
-            <span>You are all caught up! New requests will appear here.</span>
+          <div className="job-card-row" style={{ justifyContent: 'center', padding: '30px' }}>
+            <span style={{ color: 'var(--muted)' }}>No pending requests. You are ready to receive new bookings!</span>
           </div>
         ) : (
-          <div className="request-list">
-            {pendingRequests.map(r => (
-              <article key={r.id}>
-                <div className="job-icon">{serviceIcons[r.serviceName] || '⚡'}</div>
-                <div>
+          pendingRequests.map(r => (
+            <div className="job-card-row" key={r.id}>
+              <div className="job-details-group">
+                <div className="job-type-icon">{serviceIcons[r.serviceName] || '⚡'}</div>
+                <div className="job-info-text">
                   <h3>{r.title} ({r.serviceName})</h3>
-                  <p>{r.customerName} · {r.address}</p>
-                  <small>“{r.description}”</small>
+                  <p>Customer: <b>{r.customerName}</b> · {r.address}</p>
+                  <small style={{ color: 'var(--muted)' }}>“{r.description}”</small>
                 </div>
-                <strong>₹{r.estimatedPrice || 500}<small> est.</small></strong>
-                <div className="request-actions">
-                  <button className="outline-button" onClick={() => handleAction(api.rejectJob, r.id)}>Decline</button>
-                  <button className="primary" onClick={() => handleAction(api.acceptJob, r.id)}>Accept</button>
-                </div>
-              </article>
-            ))}
-          </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '18px', fontWeight: 800 }}>₹{r.estimatedPrice || 500}</span>
+                <button className="btn btn-danger-outline btn-sm" onClick={() => handleAction(api.rejectJob, r.id, 'Job rejected')}>Decline</button>
+                <button className="btn btn-primary btn-sm" onClick={() => handleAction(api.acceptJob, r.id, 'Job accepted! You can now start travel.')}>Accept Request</button>
+              </div>
+            </div>
+          ))
         )}
       </section>
 
-      <section className="dash-section">
-        <div className="section-heading">
-          <div>
-            <h2>Active & In-Progress Jobs ({activeJobs.length})</h2>
-            <p>Update your status as you travel and complete jobs.</p>
-          </div>
-        </div>
-
+      {/* ACTIVE JOBS */}
+      <section>
+        <h2 style={{ marginBottom: '14px' }}>Active & In-Progress Jobs ({activeJobs.length})</h2>
         {activeJobs.length === 0 ? (
-          <div className="empty"><strong>No jobs in progress currently</strong></div>
+          <div className="job-card-row" style={{ justifyContent: 'center', padding: '30px' }}>
+            <span style={{ color: 'var(--muted)' }}>No jobs currently in progress.</span>
+          </div>
         ) : (
           activeJobs.map(job => (
-            <div className="active-job" key={job.id}>
-              <div className="job-icon">{serviceIcons[job.serviceName] || '🔧'}</div>
-              <div className="job-main">
-                <span className={`status-badge ${job.status}`}>● {job.status.replace(/_/g, ' ')}</span>
-                <h3>{job.title} · Customer: {job.customerName}</h3>
-                <p>{job.address}</p>
-                <small className="muted">{job.description}</small>
+            <div className="job-card-row" key={job.id}>
+              <div className="job-details-group">
+                <div className="job-type-icon">{serviceIcons[job.serviceName] || '🔧'}</div>
+                <div className="job-info-text">
+                  <span className={`job-status-pill ${job.status}`}>● {job.status.replace(/_/g, ' ')}</span>
+                  <h3>{job.title} · Customer: {job.customerName}</h3>
+                  <p>{job.address}</p>
+                </div>
               </div>
-              <div className="job-actions">
+              <div style={{ display: 'flex', gap: '8px' }}>
                 {job.status === 'ACCEPTED' && (
-                  <button className="primary" onClick={() => handleAction(api.onTheWay, job.id)}>On The Way 🚗</button>
+                  <button className="btn btn-primary" onClick={() => handleAction(api.onTheWay, job.id, 'Status set to On The Way 🚗')}>
+                    Mark On The Way 🚗
+                  </button>
                 )}
                 {job.status === 'ON_THE_WAY' && (
-                  <button className="primary" onClick={() => handleAction(api.arrived, job.id)}>Mark Arrived 📍</button>
+                  <button className="btn btn-primary" onClick={() => handleAction(api.arrived, job.id, 'Status set to Arrived 📍')}>
+                    Mark Arrived 📍
+                  </button>
                 )}
                 {job.status === 'ARRIVED' && (
-                  <button className="primary" onClick={() => handleAction(api.startJob, job.id)}>Start Job ⚙️</button>
+                  <button className="btn btn-primary" onClick={() => handleAction(api.startJob, job.id, 'Job Started ⚙️')}>
+                    Start Work ⚙️
+                  </button>
                 )}
                 {job.status === 'IN_PROGRESS' && (
-                  <button className="primary" onClick={() => handleAction(api.completeJob, job.id)}>Complete Job ✅</button>
+                  <button className="btn btn-secondary" onClick={() => handleAction(api.completeJob, job.id, 'Job Completed! ✅')}>
+                    Complete Job ✅
+                  </button>
                 )}
               </div>
             </div>
@@ -768,15 +1050,18 @@ export function WorkerDashboard({ auth, setRole }) {
   );
 }
 
+/* =========================================
+   ADMIN DASHBOARD
+========================================= */
 export function AdminDashboard({ auth }) {
-  const [stats, setStats] = useState({ totalUsers: 6, totalWorkers: 4, verifiedWorkers: 4, pendingVerifications: 0 });
+  const [stats, setStats] = useState({ totalUsers: 10, totalWorkers: 5, verifiedWorkers: 4, pendingVerifications: 1 });
   const [pendingWorkers, setPendingWorkers] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const loadAdminData = () => {
     setLoading(true);
     Promise.all([
-      api.adminDashboard().catch(() => ({ totalUsers: 6, totalWorkers: 4, verifiedWorkers: 4, pendingVerifications: 0 })),
+      api.adminDashboard().catch(() => stats),
       api.adminPendingWorkers().catch(() => [])
     ]).then(([dashboardStats, pending]) => {
       if (dashboardStats) setStats(dashboardStats);
@@ -791,82 +1076,98 @@ export function AdminDashboard({ auth }) {
   const handleVerify = async (workerId) => {
     try {
       await api.verifyWorker(workerId);
+      showToast('Worker profile verified & approved!', 'success');
       loadAdminData();
     } catch (e) {
-      alert(e.message);
+      showToast(e.message, 'error');
     }
   };
 
   return (
-    <main className="dashboard admin">
-      <div className="dash-top">
+    <main className="dashboard-page">
+      <div className="dashboard-hero">
         <div>
-          <span className="eyebrow">PLATFORM OVERVIEW</span>
-          <h1>Admin Control Panel</h1>
-          <p>Real-time ecosystem statistics and worker verification queue.</p>
+          <div className="eyebrow-text">ADMINISTRATION PLATFORM</div>
+          <h1>System Overview & Compliance Control</h1>
+          <p style={{ color: 'var(--muted)' }}>Real-time ecosystem statistics, identity verification queue, and safety auditing.</p>
         </div>
-        <button className="role-switch" onClick={loadAdminData}>Refresh Stats ↻</button>
+        <button className="btn btn-outline" onClick={loadAdminData}>Refresh Stats ↻</button>
       </div>
 
-      <div className="stat-row">
-        <Stat num={stats.totalUsers?.toString() || '6'} label="Total platform users" />
-        <Stat num={stats.totalWorkers?.toString() || '4'} label="Total registered workers" />
-        <Stat num={stats.verifiedWorkers?.toString() || '4'} label="Verified pros" />
-        <Stat num={stats.pendingVerifications?.toString() || '0'} label="Pending approvals" />
+      <div className="stats-grid">
+        <div className="stat-card-modern">
+          <strong>{stats.totalUsers || 12}</strong>
+          <span>Total Registered Users</span>
+        </div>
+        <div className="stat-card-modern">
+          <strong>{stats.totalWorkers || 6}</strong>
+          <span>Registered Pros</span>
+        </div>
+        <div className="stat-card-modern">
+          <strong>{stats.verifiedWorkers || 5}</strong>
+          <span>Verified Specialists</span>
+        </div>
+        <div className="stat-card-modern">
+          <strong style={{ color: pendingWorkers.length > 0 ? 'var(--accent)' : 'var(--dark)' }}>
+            {pendingWorkers.length}
+          </strong>
+          <span>Pending Verifications</span>
+        </div>
       </div>
 
-      <div className="admin-grid">
-        <section className="dash-section panel">
-          <h2>Pending Worker Verifications <span className="pill amber">{pendingWorkers.length} pending</span></h2>
-          <p>Review worker documents to keep WorkSaathi safe and trusted.</p>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '24px' }}>
+        <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '24px' }}>
+          <h3 style={{ marginBottom: '6px' }}>Pro Verification Queue ({pendingWorkers.length} pending)</h3>
+          <p style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '18px' }}>
+            Review government ID credentials and trade certificates before granting badge.
+          </p>
 
           {pendingWorkers.length === 0 ? (
-            <div className="empty" style={{ padding: '30px', marginTop: '12px' }}>
-              <strong>All workers are currently verified!</strong>
-              <small>Newly registered workers will appear here for identity and document validation.</small>
+            <div style={{ padding: '30px', textAlign: 'center', background: 'var(--light-bg)', borderRadius: 'var(--radius-sm)' }}>
+              <b>All registered professionals are currently verified!</b>
             </div>
           ) : (
             pendingWorkers.map(w => (
-              <div className="verify-row" key={w.id}>
-                <div className="avatar" style={{ background: '#0b8a79' }}>{w.name?.slice(0, 2).toUpperCase() || 'W'}</div>
-                <span>
-                  <b>{w.name}</b>
-                  <small>{w.bio || 'New registration'} · Status: {w.verificationStatus}</small>
-                </span>
-                <button className="primary" style={{ padding: '6px 12px', fontSize: '11px' }} onClick={() => handleVerify(w.id)}>
-                  Approve Pro
+              <div key={w.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <div className="worker-avatar" style={{ width: '40px', height: '40px', fontSize: '14px', background: '#0f62fe' }}>
+                    {w.name?.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div>
+                    <b>{w.name}</b>
+                    <div style={{ fontSize: '12px', color: 'var(--muted)' }}>{w.bio || 'New Technician Registration'}</div>
+                  </div>
+                </div>
+                <button className="btn btn-secondary btn-sm" onClick={() => handleVerify(w.id)}>
+                  Approve Pro ✓
                 </button>
               </div>
             ))
           )}
-        </section>
+        </div>
 
-        <section className="dash-section panel">
-          <h2>Weekly Platform Activity</h2>
-          <p>Completed jobs across Delhi-NCR are up <b className="green">18.4%</b> this month.</p>
-          <div className="bar-chart">
-            {[45, 62, 58, 85, 76, 95, 82].map((h, i) => (
-              <div key={i}>
-                <i style={{ height: h + '%' }}></i>
-                <span>{['M', 'T', 'W', 'T', 'F', 'S', 'S'][i]}</span>
+        <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '24px' }}>
+          <h3 style={{ marginBottom: '6px' }}>Weekly Completed Service Volume</h3>
+          <p style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '18px' }}>
+            Bookings up <b style={{ color: 'var(--secondary)' }}>+24.8%</b> this month across Delhi-NCR.
+          </p>
+          <div style={{ height: '140px', display: 'flex', alignItems: 'flex-end', gap: '12px', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>
+            {[40, 65, 55, 80, 95, 85, 90].map((h, i) => (
+              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                <div style={{ width: '100%', height: `${h}%`, background: 'var(--primary)', borderRadius: '4px 4px 0 0' }}></div>
+                <span style={{ fontSize: '11px', color: 'var(--muted)' }}>{['M', 'T', 'W', 'T', 'F', 'S', 'S'][i]}</span>
               </div>
             ))}
           </div>
-        </section>
+        </div>
       </div>
     </main>
   );
 }
 
-export function Stat({ num, label }) {
-  return (
-    <div className="stat">
-      <strong>{num}</strong>
-      <span>{label}</span>
-    </div>
-  );
-}
-
+/* =========================================
+   AUTHENTICATION PAGE
+========================================= */
 export function AuthPage({ onAuthenticated }) {
   const [mode, setMode] = useState('login');
   const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', role: 'CUSTOMER' });
@@ -884,6 +1185,7 @@ export function AuthPage({ onAuthenticated }) {
 
       localStorage.setItem('worksaathi_access_token', result.accessToken);
       localStorage.setItem('worksaathi_refresh_token', result.refreshToken);
+      showToast('Login successful! Welcome to WorkSaathi.', 'success');
       onAuthenticated(result);
     } catch (err) {
       setError(err.message || 'Authentication failed');
@@ -895,113 +1197,212 @@ export function AuthPage({ onAuthenticated }) {
   const fillDemo = (email, role) => {
     setMode('login');
     setForm({ ...form, email, password: 'password123' });
+    showToast(`Autofilled demo ${role} credentials`, 'info');
   };
 
-  const field = (key, label, type = 'text') => (
-    <label>
-      {label}
-      <input
-        required
-        type={type}
-        value={form[key]}
-        onChange={e => setForm({ ...form, [key]: e.target.value })}
-      />
-    </label>
-  );
-
   return (
-    <main className="auth-page">
-      <form className="auth-card" onSubmit={submit}>
-        <div className="brand"><i>W</i> Work<span>Saathi</span></div>
-        <div className="eyebrow">ACCOUNT ACCESS</div>
-        <h1>{mode === 'login' ? 'Welcome back' : 'Create your account'}</h1>
-        <p>{mode === 'login' ? 'Log in to manage your services and bookings.' : 'Join to find or offer trusted local services.'}</p>
+    <main className="auth-container">
+      <div className="auth-card-elevated">
+        <div className="brand" style={{ marginBottom: '16px' }}>
+          <div className="brand-icon">W</div>
+          <div>Work<span>Saathi</span></div>
+        </div>
 
-        {mode === 'register' && (
-          <>
-            {field('name', 'Full name')}
-            {field('phone', 'Phone number')}
-          </>
-        )}
+        <h2 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '6px' }}>
+          {mode === 'login' ? 'Welcome Back' : 'Create Your Account'}
+        </h2>
+        <p style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '20px' }}>
+          {mode === 'login' ? 'Log in to book services or manage your pro workspace.' : 'Sign up to find certified pros or grow your service business.'}
+        </p>
 
-        {field('email', 'Email address', 'email')}
-        {field('password', 'Password', 'password')}
+        <form onSubmit={submit}>
+          {mode === 'register' && (
+            <>
+              <div className="filter-group">
+                <label>
+                  Full Name
+                  <input
+                    required
+                    className="filter-input"
+                    value={form.name}
+                    onChange={e => setForm({ ...form, name: e.target.value })}
+                  />
+                </label>
+              </div>
+              <div className="filter-group">
+                <label>
+                  Phone Number
+                  <input
+                    required
+                    className="filter-input"
+                    value={form.phone}
+                    onChange={e => setForm({ ...form, phone: e.target.value })}
+                  />
+                </label>
+              </div>
+            </>
+          )}
 
-        {mode === 'register' && (
-          <label>
-            I want to join as
-            <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
-              <option value="CUSTOMER">Customer (Book Services)</option>
-              <option value="WORKER">Worker (Provide Services)</option>
-            </select>
-          </label>
-        )}
+          <div className="filter-group">
+            <label>
+              Email Address
+              <input
+                required
+                type="email"
+                className="filter-input"
+                value={form.email}
+                onChange={e => setForm({ ...form, email: e.target.value })}
+              />
+            </label>
+          </div>
 
-        {error && <p className="form-error">{error}</p>}
+          <div className="filter-group">
+            <label>
+              Password
+              <input
+                required
+                type="password"
+                className="filter-input"
+                value={form.password}
+                onChange={e => setForm({ ...form, password: e.target.value })}
+              />
+            </label>
+          </div>
 
-        <button className="primary wide" disabled={busy}>
-          {busy ? 'Please wait…' : mode === 'login' ? 'Log in' : 'Create account'} <b>→</b>
-        </button>
+          {mode === 'register' && (
+            <div className="filter-group">
+              <label>
+                Join as
+                <select
+                  className="filter-select"
+                  value={form.role}
+                  onChange={e => setForm({ ...form, role: e.target.value })}
+                >
+                  <option value="CUSTOMER">Customer (Book Services)</option>
+                  <option value="WORKER">Worker Specialist (Provide Services)</option>
+                </select>
+              </label>
+            </div>
+          )}
 
-        <button type="button" className="auth-switch" onClick={() => setMode(mode === 'login' ? 'register' : 'login')}>
-          {mode === 'login' ? 'New to WorkSaathi? Create an account' : 'Already have an account? Log in'}
-        </button>
+          {error && <div style={{ color: 'var(--danger)', marginBottom: '14px', fontSize: '13px' }}>{error}</div>}
 
-        <div className="demo-accounts">
-          <small>Quick 1-Click Demo Accounts</small>
-          <div className="demo-grid">
-            <button type="button" className="demo-btn" onClick={() => fillDemo('customer@worksaathi.com', 'customer')}>
+          <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: '6px' }} disabled={busy}>
+            {busy ? 'Verifying...' : mode === 'login' ? 'Sign In ➔' : 'Create Account ➔'}
+          </button>
+        </form>
+
+        <div style={{ textAlign: 'center', marginTop: '16px' }}>
+          <button
+            type="button"
+            style={{ fontSize: '13px', fontWeight: 600, color: 'var(--primary)' }}
+            onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
+          >
+            {mode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+          </button>
+        </div>
+
+        <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
+          <small style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' }}>1-Click Instant Demo Login</small>
+          <div className="demo-pills-row">
+            <button type="button" className="demo-pill-btn" onClick={() => fillDemo('customer@worksaathi.com', 'Customer')}>
               👨 Customer
             </button>
-            <button type="button" className="demo-btn" onClick={() => fillDemo('raj@worksaathi.com', 'worker')}>
-              ⚡ Worker
+            <button type="button" className="demo-pill-btn" onClick={() => fillDemo('raj@worksaathi.com', 'Worker')}>
+              ⚡ Electrician
             </button>
-            <button type="button" className="demo-btn" onClick={() => fillDemo('admin@worksaathi.com', 'admin')}>
+            <button type="button" className="demo-pill-btn" onClick={() => fillDemo('admin@worksaathi.com', 'Admin')}>
               🛡️ Admin
             </button>
           </div>
         </div>
-      </form>
+      </div>
     </main>
   );
 }
 
+/* =========================================
+   FOOTER
+========================================= */
 export function Footer() {
   return (
-    <footer className="footer">
-      <div className="brand"><i>W</i> Work<span>Saathi</span></div>
-      <p>India's trusted platform for skilled local home & commercial service professionals.</p>
-      <small>© 2026 WorkSaathi Platform. All rights reserved.</small>
+    <footer style={{ background: '#0f172a', color: '#fff', padding: '60px max(4vw, 24px) 30px', borderTop: '1px solid #1e293b' }}>
+      <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 1fr', gap: '40px', marginBottom: '40px' }}>
+        <div>
+          <div className="brand" style={{ color: '#fff', marginBottom: '14px' }}>
+            <div className="brand-icon">W</div>
+            <div>Work<span style={{ color: '#34d399' }}>Saathi</span></div>
+          </div>
+          <p style={{ color: '#94a3b8', fontSize: '14px', maxWidth: '320px', lineHeight: 1.6 }}>
+            India's premier technology platform connecting homeowners and commercial enterprises with certified, background-checked service professionals.
+          </p>
+        </div>
+        <div>
+          <b style={{ display: 'block', marginBottom: '14px', fontSize: '14px' }}>Popular Services</b>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px', color: '#94a3b8' }}>
+            <span>⚡ Electrical Repairs</span>
+            <span>🔧 Plumbing & Leaks</span>
+            <span>❄️ AC Jet Cleaning</span>
+            <span>✨ Deep Sanitization</span>
+          </div>
+        </div>
+        <div>
+          <b style={{ display: 'block', marginBottom: '14px', fontSize: '14px' }}>Cities Covered</b>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px', color: '#94a3b8' }}>
+            <span>Delhi NCR (Gurgaon/Noida)</span>
+            <span>Mumbai & Navi Mumbai</span>
+            <span>Bengaluru (Central & East)</span>
+            <span>Hyderabad & Pune</span>
+          </div>
+        </div>
+        <div>
+          <b style={{ display: 'block', marginBottom: '14px', fontSize: '14px' }}>Trust & Safety</b>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px', color: '#94a3b8' }}>
+            <span>🛡️ ₹10,000 Cover Guarantee</span>
+            <span>🔍 7-Point Background Check</span>
+            <span>💳 Escrow Post-Service Pay</span>
+            <span>📞 24/7 Priority Helpline</span>
+          </div>
+        </div>
+      </div>
+      <div style={{ maxWidth: '1280px', margin: '0 auto', borderTop: '1px solid #1e293b', paddingTop: '20px', display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#64748b' }}>
+        <span>© 2026 WorkSaathi Technologies India Pvt. Ltd. All rights reserved.</span>
+        <span>Made with ❤️ for Indian Homes</span>
+      </div>
     </footer>
   );
 }
 
 export function mapWorker(worker, index = 0) {
-  const palette = ['#195a9b', '#0b8a79', '#a15c26', '#944e78'];
-  const names = (worker?.name || 'Local Professional').split(' ');
+  const palette = ['#0f62fe', '#00a676', '#f59e0b', '#9333ea'];
+  const names = (worker?.name || 'Local Specialist').split(' ');
   const initials = names.map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
   return {
     id: worker.id,
-    name: worker.name || 'Local Professional',
-    role: worker.services?.[0] || 'Verified Professional',
+    name: worker.name || 'Local Specialist',
+    role: worker.services?.[0] || 'Verified Specialist',
     rating: worker.averageRating || 4.8,
-    reviews: worker.totalReviews || 12,
-    rate: worker.dailyRate || worker.hourlyRate || 450,
-    distance: worker.distance || (1.5 + (index * 0.6)),
-    exp: worker.experienceYears || 4,
+    reviews: worker.totalReviews || 18,
+    rate: worker.dailyRate || worker.hourlyRate || 499,
+    distance: worker.distance || (1.2 + (index * 0.5)),
+    exp: worker.experienceYears || 5,
     bio: worker.bio,
     photo: initials,
     color: palette[index % palette.length],
     available: worker.availabilityStatus === 'AVAILABLE' || worker.availabilityStatus === 'APPROVED',
-    skills: worker.services?.length ? worker.services : ['General Maintenance']
+    skills: worker.services?.length ? worker.services : ['General Maintenance', 'Inspection', 'Doorstep Repair']
   };
 }
 
+/* =========================================
+   MAIN APP ORCHESTRATOR
+========================================= */
 export function App() {
   const [page, setPage] = useState('home');
   const [role, setRole] = useState('customer');
   const [query, setQuery] = useState('');
+  const [city, setCity] = useState('New Delhi (NCR)');
   const [selected, setSelected] = useState(fallbackWorkers[0]);
   const [booking, setBooking] = useState(false);
   const [auth, setAuth] = useState(() => {
@@ -1050,12 +1451,15 @@ export function App() {
     setAuth(null);
     setRole('customer');
     setPage('home');
+    showToast('Logged out successfully', 'info');
   };
 
   const workerList = liveWorkers.length ? liveWorkers : fallbackWorkers;
 
   return (
     <>
+      <ToastContainer />
+
       <Header
         page={page}
         setPage={setPage}
@@ -1063,6 +1467,8 @@ export function App() {
         setRole={setRole}
         auth={auth}
         onLogout={logout}
+        city={city}
+        setCity={setCity}
       />
 
       {page === 'home' && (
@@ -1083,6 +1489,7 @@ export function App() {
           servicesList={servicesList}
           loading={loading}
           error={apiError}
+          city={city}
         />
       )}
 
